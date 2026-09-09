@@ -4,13 +4,16 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.*
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -21,6 +24,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.studytimerapp.data.ThemeMode
+import com.example.studytimerapp.data.ThemePreferences
 import com.example.studytimerapp.theme.*
 import com.example.studytimerapp.ui.screens.AnalyticsScreen
 import com.example.studytimerapp.ui.screens.HabitScreen
@@ -31,8 +36,19 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        val themePrefs = ThemePreferences(this)
+
         setContent {
-            StudyTimerAppTheme {
+            val themeMode by themePrefs.themeMode.collectAsState()
+            val isSystemDark = isSystemInDarkTheme()
+            val isDark = when (themeMode) {
+                ThemeMode.LIGHT -> false
+                ThemeMode.DARK -> true
+                ThemeMode.SYSTEM -> isSystemDark
+            }
+
+            StudyTimerAppTheme(darkTheme = isDark) {
                 val app = application as StudyTimerApplication
                 val timerViewModel: TimerViewModel = viewModel(
                     factory = TimerViewModelFactory(app.repository, app.applicationContext)
@@ -147,17 +163,23 @@ class MainActivity : ComponentActivity() {
                             HabitScreen(
                                 habitViewModel = habitViewModel,
                                 timerViewModel = timerViewModel,
-                                onNavigateToTimers = { navController.navigate("timers") }
+                                onNavigateToTimers = { navController.navigate("timers") },
+                                isDark = isDark,
+                                onToggleTheme = { themePrefs.toggleLightDark(isDark) }
                             )
                         }
                         composable("timers") {
                             HomeScreen(
-                                viewModel = timerViewModel
+                                viewModel = timerViewModel,
+                                isDark = isDark,
+                                onToggleTheme = { themePrefs.toggleLightDark(isDark) }
                             )
                         }
                         composable("analytics") {
                             AnalyticsScreen(
-                                viewModel = analyticsViewModel
+                                viewModel = analyticsViewModel,
+                                isDark = isDark,
+                                onToggleTheme = { themePrefs.toggleLightDark(isDark) }
                             )
                         }
                     }

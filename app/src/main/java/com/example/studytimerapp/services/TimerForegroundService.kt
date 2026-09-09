@@ -134,7 +134,7 @@ class TimerForegroundService : Service() {
             .setSmallIcon(R.drawable.ic_notification_timer)
             .setContentTitle("Rhythm Focus")
             .setContentText("$activeCount Active Focus Timers")
-            .setSubText("$activeCount Timers")
+            .setSubText("Rhythm")
             .setContentIntent(contentIntent)
             .setGroup(GROUP_KEY)
             .setGroupSummary(true)
@@ -146,7 +146,7 @@ class TimerForegroundService : Service() {
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setCategory(NotificationCompat.CATEGORY_STOPWATCH)
             .addAction(
-                android.R.drawable.ic_media_pause,
+                R.drawable.ic_notif_pause,
                 "Pause All",
                 pauseAllPendingIntent
             )
@@ -206,39 +206,37 @@ class TimerForegroundService : Service() {
         } else if (weeklyProgressFormatted.isNotBlank() && !weeklyProgressFormatted.startsWith("0.0h / 0h") && !weeklyProgressFormatted.startsWith("0.0h / 0.0h")) {
             "🎯 Weekly: $weeklyProgressFormatted$streakText"
         } else {
-            "Focus session in progress"
+            "Live focus session in progress"
         }
 
-        // Expanded BigText
+        // Expanded BigText with clean, beautiful spacing
         val bigTextBuilder = StringBuilder()
-        bigTextBuilder.append("⏱ Session Status: Live & Tracking\n")
-        if (todayTotalFormatted.isNotBlank()) {
-            bigTextBuilder.append("📊 Today's Cumulative: ").append(todayTotalFormatted).append("\n")
-        }
         if (targetMinutes > 0) {
             val progressPct = ((todayTotalMinutes.toFloat() / targetMinutes) * 100).toInt()
             bigTextBuilder.append("🎯 Goal: ").append(todayTotalMinutes).append("m of ").append(targetMinutes).append("m (").append(progressPct).append("% achieved)\n")
+        } else if (weeklyProgressFormatted.isNotBlank() && !weeklyProgressFormatted.startsWith("0.0h / 0h") && !weeklyProgressFormatted.startsWith("0.0h / 0.0h")) {
+            bigTextBuilder.append("📅 Target: ").append(weeklyProgressFormatted).append("\n")
         }
-        if (weeklyProgressFormatted.isNotBlank() && !weeklyProgressFormatted.startsWith("0.0h / 0h") && !weeklyProgressFormatted.startsWith("0.0h / 0.0h")) {
-            bigTextBuilder.append("📅 Weekly Target: ").append(weeklyProgressFormatted).append("\n")
+        if (todayTotalFormatted.isNotBlank()) {
+            bigTextBuilder.append("📊 Today's Cumulative: ").append(todayTotalFormatted).append("\n")
         }
         if (streakDays > 0) {
             bigTextBuilder.append("🔥 Habit Streak: ").append(streakDays).append(" consecutive days\n")
         }
         if (rhythmScore > 0) {
             val tier = when {
-                rhythmScore >= 90 -> "Transcendent"
+                rhythmScore >= 90 -> "Optimal Flow"
                 rhythmScore >= 75 -> "Harmonious"
                 rhythmScore >= 50 -> "Steady"
                 else -> "Building Rhythm"
             }
-            bigTextBuilder.append("⭐ Daily Rhythm Score: ").append(rhythmScore).append(" • ").append(tier)
+            bigTextBuilder.append("⭐ Daily Rhythm Index: ").append(rhythmScore).append(" • ").append(tier)
         }
 
         val bigTextStyle = NotificationCompat.BigTextStyle()
             .setBigContentTitle("⏱ $subjectName")
             .bigText(bigTextBuilder.toString().trimEnd())
-            .setSummaryText(if (isGrouped) "Active Timer" else "Focus Intelligence")
+            .setSummaryText(if (isGrouped) "Active Timer" else "Focus Flow")
 
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification_timer)
@@ -251,18 +249,19 @@ class TimerForegroundService : Service() {
             .setOnlyAlertOnce(true)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setUsesChronometer(true)
+            .setShowWhen(true)
             .setWhen(chronometerBase)
             .setColor(if (subjectColor != 0) subjectColor else 0xFF437A55.toInt())
             .setColorized(false)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setCategory(NotificationCompat.CATEGORY_STOPWATCH)
             .addAction(
-                android.R.drawable.ic_media_pause,
+                R.drawable.ic_notif_pause,
                 "Pause",
                 togglePendingIntent
             )
             .addAction(
-                android.R.drawable.ic_menu_save,
+                R.drawable.ic_notif_check,
                 "Save & Finish",
                 stopPendingIntent
             )

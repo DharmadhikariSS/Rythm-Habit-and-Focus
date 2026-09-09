@@ -1,6 +1,7 @@
 package com.example.studytimerapp.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -12,12 +13,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,7 +41,9 @@ fun HabitScreen(
     habitViewModel: HabitViewModel,
     timerViewModel: TimerViewModel,
     onNavigateToTimers: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isDark: Boolean = false,
+    onToggleTheme: (() -> Unit)? = null
 ) {
     val habits by habitViewModel.allHabits.collectAsState(initial = emptyList())
     val entries by habitViewModel.allEntries.collectAsState(initial = emptyList())
@@ -85,6 +91,13 @@ fun HabitScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { onToggleTheme?.invoke() }) {
+                        Icon(
+                            imageVector = if (isDark) Icons.Default.LightMode else Icons.Default.DarkMode,
+                            contentDescription = "Toggle Theme",
+                            tint = AccentEmerald
+                        )
+                    }
                     IconButton(onClick = { showAddDialog = true }) {
                         Icon(Icons.Default.Add, contentDescription = "Add Habit", tint = AccentEmerald)
                     }
@@ -172,25 +185,109 @@ fun HabitScreen(
             // 3. Habit Cards
             if (habits.isEmpty()) {
                 item {
-                    Box(
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 32.dp),
-                        contentAlignment = Alignment.Center
+                            .border(1.dp, ZenBorder, RoundedCornerShape(18.dp)),
+                        shape = RoundedCornerShape(18.dp),
+                        colors = CardDefaults.cardColors(containerColor = ZenSurface)
                     ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(20.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
                             Text("🌿", fontSize = 36.sp)
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                "No habits yet",
+                                "No habits tracked yet",
                                 fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
                                 color = ZenTextPrimary
                             )
                             Text(
-                                "Tap + to add your first daily habit",
+                                "Tap '+' or pick a starter habit below to jumpstart your daily flow:",
                                 fontSize = 12.sp,
-                                color = ZenTextSecondary
+                                color = ZenTextSecondary,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                             )
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                QuickHabitSuggestionRow(
+                                    icon = "💧",
+                                    name = "Drink Water (8 Cups)",
+                                    tag = "Counter Habit",
+                                    color = AccentOcean,
+                                    onClick = {
+                                        habitViewModel.addHabit(
+                                            Habit(
+                                                name = "Drink Water",
+                                                icon = "💧",
+                                                color = AccentOcean.toArgb(),
+                                                type = HabitType.COUNTER,
+                                                targetCount = 8
+                                            )
+                                        )
+                                    }
+                                )
+                                QuickHabitSuggestionRow(
+                                    icon = "📖",
+                                    name = "Daily Reading (15m)",
+                                    tag = "Timed Habit",
+                                    color = AccentOchre,
+                                    onClick = {
+                                        habitViewModel.addHabit(
+                                            Habit(
+                                                name = "Daily Reading",
+                                                icon = "📖",
+                                                color = AccentOchre.toArgb(),
+                                                type = HabitType.TIMED,
+                                                targetDurationMinutes = 15
+                                            )
+                                        )
+                                    }
+                                )
+                                QuickHabitSuggestionRow(
+                                    icon = "🧘",
+                                    name = "Deep Work Sprint (25m)",
+                                    tag = "Focus Habit",
+                                    color = AccentEmerald,
+                                    onClick = {
+                                        habitViewModel.addHabit(
+                                            Habit(
+                                                name = "Deep Work Sprint",
+                                                icon = "🧘",
+                                                color = AccentEmerald.toArgb(),
+                                                type = HabitType.TIMED,
+                                                targetDurationMinutes = 25
+                                            )
+                                        )
+                                    }
+                                )
+                                QuickHabitSuggestionRow(
+                                    icon = "🏃",
+                                    name = "Morning Stretch & Walk",
+                                    tag = "Check-in Habit",
+                                    color = AccentTerracotta,
+                                    onClick = {
+                                        habitViewModel.addHabit(
+                                            Habit(
+                                                name = "Stretch & Walk",
+                                                icon = "🏃",
+                                                color = AccentTerracotta.toArgb(),
+                                                type = HabitType.CHECK
+                                            )
+                                        )
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -251,3 +348,53 @@ fun HabitScreen(
         }
     }
 }
+
+@Composable
+private fun QuickHabitSuggestionRow(
+    icon: String,
+    name: String,
+    tag: String,
+    color: Color,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
+        color = ZenSurfaceSubtle,
+        border = androidx.compose.foundation.BorderStroke(1.dp, ZenBorder)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Text(icon, fontSize = 20.sp)
+                Column {
+                    Text(name, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = ZenTextPrimary)
+                    Text(tag, fontSize = 10.sp, color = color, fontWeight = FontWeight.SemiBold)
+                }
+            }
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = AccentEmerald.copy(alpha = 0.15f)
+            ) {
+                Text(
+                    text = "+ Add",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AccentEmerald,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                )
+            }
+        }
+    }
+}
+

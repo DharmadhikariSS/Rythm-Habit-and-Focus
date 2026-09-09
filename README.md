@@ -72,7 +72,8 @@ Ready-to-install APKs are published under [GitHub Releases](https://github.com/D
 
 | Version | Status | Download Link |
 |:---|:---|:---|
-| **v1.4.0** | 🌟 **Latest (Recommended)** | [Download Rhythm v1.4.0 APK](https://github.com/DharmadhikariSS/Rythm-Habit-and-Focus/releases/download/v1.4.0/Rhythm-v1.4.0.apk) |
+| **v1.5.0** | 🌟 **Latest (Recommended)** | [Download Rhythm v1.5.0 APK](https://github.com/DharmadhikariSS/Rythm-Habit-and-Focus/releases/download/v1.5.0/Rhythm-v1.5.0.apk) |
+| **v1.4.0** | Stable | [Download Rhythm v1.4.0 APK](https://github.com/DharmadhikariSS/Rythm-Habit-and-Focus/releases/download/v1.4.0/Rhythm-v1.4.0.apk) |
 | **v1.3.0** | Stable | [Download Rhythm v1.3.0 APK](https://github.com/DharmadhikariSS/Rythm-Habit-and-Focus/releases/download/v1.3.0/Rhythm-v1.3.0.apk) |
 | **v1.2.0** | Stable | [Download Rhythm v1.2.0 APK](https://github.com/DharmadhikariSS/Rythm-Habit-and-Focus/releases/download/v1.2.0/Rhythm-v1.2.0.apk) |
 | **v1.1.0** | Previous | [Download Rhythm v1.1.0 APK](https://github.com/DharmadhikariSS/Rythm-Habit-and-Focus/releases/download/v1.1.0/Rhythm-v1.1.0.apk) |

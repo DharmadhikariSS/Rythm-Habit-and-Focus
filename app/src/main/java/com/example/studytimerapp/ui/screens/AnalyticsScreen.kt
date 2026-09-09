@@ -43,7 +43,9 @@ import com.example.studytimerapp.viewmodels.*
 @Composable
 fun AnalyticsScreen(
     viewModel: AnalyticsViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isDark: Boolean = false,
+    onToggleTheme: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
 
@@ -64,6 +66,7 @@ fun AnalyticsScreen(
 
     // Unified Metric
     val rhythmScore by viewModel.dailyRhythmScore.collectAsState()
+    val behavioralInsight by viewModel.behavioralInsight.collectAsState()
 
     val allHabits by viewModel.allHabits.collectAsState(initial = emptyList())
     val allEntries by viewModel.allEntries.collectAsState(initial = emptyList())
@@ -84,6 +87,13 @@ fun AnalyticsScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { onToggleTheme?.invoke() }) {
+                        Icon(
+                            imageVector = if (isDark) Icons.Default.LightMode else Icons.Default.DarkMode,
+                            contentDescription = "Toggle Theme",
+                            tint = AccentEmerald
+                        )
+                    }
                     TextButton(
                         onClick = {
                             CsvExportUtils.exportAndShareData(
@@ -130,6 +140,7 @@ fun AnalyticsScreen(
                         horizontalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
                         // Golden Rhythm Radial Donut
+                        val trackBorderColor = ZenBorder
                         Box(
                             modifier = Modifier
                                 .size(72.dp)
@@ -139,7 +150,7 @@ fun AnalyticsScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Canvas(modifier = Modifier.size(54.dp)) {
-                                drawCircle(color = ZenBorder, style = Stroke(width = 6.dp.toPx(), cap = StrokeCap.Round))
+                                drawCircle(color = trackBorderColor, style = Stroke(width = 6.dp.toPx(), cap = StrokeCap.Round))
                                 drawArc(
                                     color = AccentOchre,
                                     startAngle = -90f,
@@ -600,23 +611,86 @@ fun AnalyticsScreen(
                     }
                 }
 
-                // D. Behavioral Spotlight Card
+                // D. AI Behavioral Intelligence Spotlight Card
                 item {
+                    val bColor = Color(behavioralInsight.accentColor)
                     Card(
-                        modifier = Modifier.fillMaxWidth().border(1.dp, ZenBorder, RoundedCornerShape(16.dp)),
-                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(1.2.dp, bColor.copy(alpha = 0.35f), RoundedCornerShape(18.dp)),
+                        shape = RoundedCornerShape(18.dp),
                         colors = CardDefaults.cardColors(containerColor = ZenSurfaceSubtle)
                     ) {
-                        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                Text("💡", fontSize = 16.sp)
-                                Text("BEHAVIORAL SPOTLIGHT", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = ZenTextPrimary)
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            // Header: Tag + Confidence Rating
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Text("🧠", fontSize = 16.sp)
+                                    Text(
+                                        text = behavioralInsight.tag,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = bColor,
+                                        letterSpacing = 0.5.sp
+                                    )
+                                }
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = bColor.copy(alpha = 0.12f)
+                                ) {
+                                    Text(
+                                        text = behavioralInsight.confidence,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = bColor,
+                                        modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
+                                    )
+                                }
                             }
+
+                            // Headline
                             Text(
-                                "Consistency creates momentum: you hit 100% of your habits on peak days. Keep your daily streak active!",
+                                text = behavioralInsight.headline,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = ZenTextPrimary
+                            )
+
+                            // Deep Contextual Analysis
+                            Text(
+                                text = behavioralInsight.analysis,
                                 fontSize = 12.sp,
+                                lineHeight = 18.sp,
                                 color = ZenTextSecondary
                             )
+
+                            HorizontalDivider(color = ZenBorder, thickness = 0.8.dp)
+
+                            // Actionable Micro-Recommendation
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Text("⚡", fontSize = 13.sp)
+                                Text(
+                                    text = behavioralInsight.actionableTip,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = ZenTextPrimary,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
                         }
                     }
                 }

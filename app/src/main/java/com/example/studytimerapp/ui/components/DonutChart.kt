@@ -37,6 +37,7 @@ fun DonutChart(
 ) {
     val total = slices.sumOf { it.value.toDouble() }.toFloat()
 
+    val emptyTrackColor = ZenBorder
     Box(
         modifier = modifier.size(size),
         contentAlignment = Alignment.Center
@@ -45,7 +46,7 @@ fun DonutChart(
             // If empty, draw subtle gray circle
             if (total <= 0f) {
                 drawCircle(
-                    color = ZenBorder,
+                    color = emptyTrackColor,
                     style = Stroke(width = strokeWidth.toPx(), cap = StrokeCap.Round)
                 )
             } else {

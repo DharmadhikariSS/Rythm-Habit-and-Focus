@@ -10,7 +10,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
@@ -34,7 +36,9 @@ import java.util.concurrent.TimeUnit
 @Composable
 fun HomeScreen(
     viewModel: TimerViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isDark: Boolean = false,
+    onToggleTheme: (() -> Unit)? = null
 ) {
     val subjects by viewModel.allSubjects.collectAsState(initial = emptyList())
     val activeTimers by viewModel.activeTimers.collectAsState()
@@ -49,13 +53,24 @@ fun HomeScreen(
                     Column {
                         Text("Focus Timers", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = ZenTextPrimary)
                         Text(
-                            text = if (runningCount > 0) "1 active focus session" else "Focus stopwatch engine",
+                            text = when (runningCount) {
+                                0 -> "Focus stopwatch engine"
+                                1 -> "1 active focus session"
+                                else -> "$runningCount active focus sessions"
+                            },
                             fontSize = 11.sp,
                             color = if (runningCount > 0) AccentEmerald else ZenTextSecondary
                         )
                     }
                 },
                 actions = {
+                    IconButton(onClick = { onToggleTheme?.invoke() }) {
+                        Icon(
+                            imageVector = if (isDark) Icons.Default.LightMode else Icons.Default.DarkMode,
+                            contentDescription = "Toggle Theme",
+                            tint = AccentEmerald
+                        )
+                    }
                     IconButton(onClick = { showAddDialog = true }) {
                         Icon(Icons.Default.Add, contentDescription = "Add Timer Subject", tint = AccentEmerald)
                     }

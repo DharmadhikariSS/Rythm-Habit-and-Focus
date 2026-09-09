@@ -1,25 +1,27 @@
 package com.example.studytimerapp.ui.components
 
+import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -43,6 +45,12 @@ fun MonthlyOverviewCard(
     onNextMonth: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var isCalendarExpanded by rememberSaveable { mutableStateOf(false) }
+    val rotationAngle by animateFloatAsState(
+        targetValue = if (isCalendarExpanded) 180f else 0f,
+        label = "chevronRotation"
+    )
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -56,7 +64,7 @@ fun MonthlyOverviewCard(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Month Header with Prev/Next buttons
+            // Month Header with Prev/Next buttons & Dropdown Toggle Arrow
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -64,7 +72,11 @@ fun MonthlyOverviewCard(
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .clickable { isCalendarExpanded = !isCalendarExpanded }
+                        .padding(horizontal = 4.dp, vertical = 4.dp)
                 ) {
                     Box(
                         modifier = Modifier
@@ -77,9 +89,17 @@ fun MonthlyOverviewCard(
                     }
                     Text(
                         text = monthName,
-                        fontSize = 20.sp,
+                        fontSize = 19.sp,
                         fontWeight = FontWeight.Bold,
                         color = ZenTextPrimary
+                    )
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        contentDescription = if (isCalendarExpanded) "Collapse Month View" else "Expand Full Month View",
+                        tint = AccentEmerald,
+                        modifier = Modifier
+                            .size(22.dp)
+                            .rotate(rotationAngle)
                     )
                 }
 
@@ -117,6 +137,7 @@ fun MonthlyOverviewCard(
                     label = "todayRatio"
                 )
 
+                val trackBorderColor = ZenBorder
                 Box(
                     modifier = Modifier
                         .size(76.dp)
@@ -128,7 +149,7 @@ fun MonthlyOverviewCard(
                     Canvas(modifier = Modifier.size(56.dp)) {
                         // Background track
                         drawCircle(
-                            color = ZenBorder,
+                            color = trackBorderColor,
                             style = Stroke(width = 6.dp.toPx(), cap = StrokeCap.Round)
                         )
                         // Progress arc
@@ -228,12 +249,76 @@ fun MonthlyOverviewCard(
             HorizontalDivider(color = ZenBorder, thickness = 0.8.dp)
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 31-Day Activity Heatmap Strip
-            ActivityHeatmapStrip(
-                days = heatmapDays,
-                selectedDateIso = selectedDateIso,
-                onDateSelected = onDateSelected
-            )
+            // Calendar Section Header with Mode Switcher & Dropdown Arrow
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { isCalendarExpanded = !isCalendarExpanded }
+                        .padding(horizontal = 4.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = if (isCalendarExpanded) "COMPLETE MONTH CALENDAR" else "DAILY ACTIVITY HEATMAP",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = ZenTextSecondary,
+                        letterSpacing = 0.5.sp
+                    )
+                    Icon(
+                        imageVector = if (isCalendarExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        contentDescription = null,
+                        tint = AccentEmerald,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = ZenSurfaceSubtle,
+                    modifier = Modifier.clickable { isCalendarExpanded = !isCalendarExpanded }
+                ) {
+                    Text(
+                        text = if (isCalendarExpanded) "Week Strip ⇥" else "Full Month ▾",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AccentEmerald,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Expandable View: Full Month Calendar Grid vs Compact Horizontal Strip
+            AnimatedVisibility(
+                visible = isCalendarExpanded,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                CompleteMonthCalendarView(
+                    days = heatmapDays,
+                    selectedDateIso = selectedDateIso,
+                    onDateSelected = onDateSelected
+                )
+            }
+
+            AnimatedVisibility(
+                visible = !isCalendarExpanded,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                ActivityHeatmapStrip(
+                    days = heatmapDays,
+                    selectedDateIso = selectedDateIso,
+                    onDateSelected = onDateSelected
+                )
+            }
         }
     }
 }

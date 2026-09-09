@@ -348,7 +348,35 @@ class AnalyticsViewModel(private val repository: StudyRepository) : ViewModel() 
 
         (habitPts + focusPts).toInt()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    // --- AI Behavioral Intelligence Engine Spotlight ---
+    val behavioralInsight: StateFlow<BehavioralInsight> = combine(
+        allHabits,
+        allEntries,
+        allSessions,
+        allSubjects,
+        executiveHabitStats
+    ) { habits, entries, sessions, subjects, stats ->
+        BehavioralIntelligenceEngine.evaluate(
+            habits = habits,
+            entries = entries,
+            sessions = sessions,
+            subjects = subjects,
+            todayIso = DateUtils.todayIso(),
+            stats = stats,
+            timeOfDay = timeOfDayDistribution.value,
+            rhythmScore = dailyRhythmScore.value
+        )
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        BehavioralIntelligenceEngine.evaluate(
+            emptyList(), emptyList(), emptyList(), emptyList(), DateUtils.todayIso(),
+            ExecutiveHabitStats(), TimeOfDayStats(), 0
+        )
+    )
 }
+
 
 class AnalyticsViewModelFactory(private val repository: StudyRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
