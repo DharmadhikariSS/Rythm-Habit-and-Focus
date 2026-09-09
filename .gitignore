@@ -1,0 +1,34 @@
+*.iml
+.gradle
+/local.properties
+local.properties
+
+# Build directories
+build/
+/build
+app/build/
+
+# Kotlin / IDE caches
+.kotlin/
+.idea/
+.DS_Store
+captures/
+.externalNativeBuild
+.cxx
+
+# Android binaries
+*.apk
+*.ap_
+*.aab
+
+# Package Files
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Keystores
+*.jks
+*.keystore
+
