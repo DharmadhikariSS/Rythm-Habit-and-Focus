@@ -1,9 +1,16 @@
 import React from 'react';
 import { Sunrise, Sun, Sunset, Moon } from 'lucide-react';
-import { SessionRecord, TimeDistribution } from '../types';
+import { StudySession } from '../types';
 
 interface TimeOfDayChartProps {
-  sessions: SessionRecord[];
+  sessions: StudySession[];
+}
+
+interface TimeDistribution {
+  morning: number;
+  afternoon: number;
+  evening: number;
+  night: number;
 }
 
 export const TimeOfDayChart: React.FC<TimeOfDayChartProps> = ({ sessions }) => {
@@ -11,10 +18,11 @@ export const TimeOfDayChart: React.FC<TimeOfDayChartProps> = ({ sessions }) => {
 
   sessions.forEach(s => {
     const hour = new Date(s.completedAt).getHours();
-    if (hour >= 5 && hour < 12) dist.morning += s.durationMinutes;
-    else if (hour >= 12 && hour < 17) dist.afternoon += s.durationMinutes;
-    else if (hour >= 17 && hour < 22) dist.evening += s.durationMinutes;
-    else dist.night += s.durationMinutes;
+    const durationMinutes = Math.round(s.durationSeconds / 60);
+    if (hour >= 5 && hour < 12) dist.morning += durationMinutes;
+    else if (hour >= 12 && hour < 17) dist.afternoon += durationMinutes;
+    else if (hour >= 17 && hour < 22) dist.evening += durationMinutes;
+    else dist.night += durationMinutes;
   });
 
   const maxMinutes = Math.max(1, dist.morning, dist.afternoon, dist.evening, dist.night);
@@ -44,7 +52,7 @@ export const TimeOfDayChart: React.FC<TimeOfDayChartProps> = ({ sessions }) => {
             {/* Bar */}
             <div className="h-2.5 w-full bg-zen-card rounded-full overflow-hidden">
               <div
-                className="h-full bg-zen-forest rounded-full transition-all duration-500"
+                className="h-full bg-accent-emerald rounded-full transition-all duration-500"
                 style={{ width: `${p.minutes > 0 ? Math.max(5, percent) : 0}%` }}
               />
             </div>
@@ -54,3 +62,4 @@ export const TimeOfDayChart: React.FC<TimeOfDayChartProps> = ({ sessions }) => {
     </div>
   );
 };
+

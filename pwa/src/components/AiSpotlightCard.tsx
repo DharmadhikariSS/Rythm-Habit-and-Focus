@@ -11,7 +11,7 @@ const CATEGORY_LABELS: Record<string, { label: string; color: string }> = {
   MOMENTUM: { label: 'Compounding Streak', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
   CONSISTENCY: { label: 'Steady Rhythm', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400' },
   HABIT_ALIGNMENT: { label: 'Chronotype Synergy', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400' },
-  EARLY_EXPLORATION: { label: 'On-Device AI Engine', color: 'bg-zen-forest/10 text-zen-forest' },
+  EARLY_EXPLORATION: { label: 'On-Device AI Engine', color: 'bg-accent-emerald/10 text-accent-emerald' },
 };
 
 export const AiSpotlightCard: React.FC<AiSpotlightCardProps> = ({ insight }) => {
@@ -20,12 +20,12 @@ export const AiSpotlightCard: React.FC<AiSpotlightCardProps> = ({ insight }) => 
   return (
     <div className="p-5 rounded-3xl bg-zen-surface border border-zen-border shadow-sm relative overflow-hidden transition-all duration-300">
       {/* Background Accent Glow */}
-      <div className="absolute -top-12 -right-12 w-32 h-32 bg-zen-forest/5 rounded-full blur-2xl pointer-events-none" />
+      <div className="absolute -top-12 -right-12 w-32 h-32 bg-accent-emerald/5 rounded-full blur-2xl pointer-events-none" />
 
       {/* Header Badges */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-xl bg-zen-forest/10 text-zen-forest flex items-center justify-center">
+          <div className="w-8 h-8 rounded-xl bg-accent-emerald/10 text-accent-emerald flex items-center justify-center">
             <Sparkles className="w-4 h-4" />
           </div>
           <span className={`text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${meta.color}`}>
@@ -34,7 +34,7 @@ export const AiSpotlightCard: React.FC<AiSpotlightCardProps> = ({ insight }) => 
         </div>
 
         <div className="flex items-center space-x-1 text-[11px] text-zen-muted font-medium">
-          <ShieldCheck className="w-3.5 h-3.5 text-zen-accent" />
+          <ShieldCheck className="w-3.5 h-3.5 text-accent-emerald" />
           <span>{insight.confidence}% confidence</span>
         </div>
       </div>

@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { Plus, Sparkles, Calendar, RotateCcw } from 'lucide-react';
+import { Plus, Calendar, RotateCcw } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { MonthlyOverviewCard } from '../components/MonthlyOverviewCard';
 import { HabitCard } from '../components/HabitCard';
 import { AddHabitModal } from '../components/AddHabitModal';
 
 const STARTER_HABITS = [
-  { title: 'Deep Work 45m', type: 'duration' as const, targetMinutes: 45, color: '#2D5A43' },
-  { title: 'Morning Reading 20m', type: 'duration' as const, targetMinutes: 20, color: '#52B788' },
-  { title: 'Hydration & Stretch', type: 'check' as const, targetMinutes: 0, color: '#74C69D' },
-  { title: 'Meditation 10m', type: 'duration' as const, targetMinutes: 10, color: '#40916C' },
+  { name: 'Deep Work 45m', icon: '📚', type: 'TIMED' as const, targetDurationMinutes: 45, targetCount: 0, targetUnit: '', color: '#437A55' },
+  { name: 'Morning Reading', icon: '📖', type: 'TIMED' as const, targetDurationMinutes: 20, targetCount: 0, targetUnit: '', color: '#386B80' },
+  { name: 'Hydration 8 Cups', icon: '💧', type: 'COUNTER' as const, targetDurationMinutes: 0, targetCount: 8, targetUnit: 'cups', color: '#3A7D99' },
+  { name: 'Meditation 15m', icon: '🧘', type: 'TIMED' as const, targetDurationMinutes: 15, targetCount: 0, targetUnit: '', color: '#6B5F8C' },
 ];
 
 export const HabitScreen: React.FC = () => {
@@ -25,22 +25,22 @@ export const HabitScreen: React.FC = () => {
 
   return (
     <div className="pb-24 pt-3 px-4 max-w-md mx-auto space-y-4">
-      {/* Monthly Overview Card with 7-Column Dropdown Heatmap */}
+      {/* 1. Monthly Overview Hero Card */}
       <MonthlyOverviewCard />
 
-      {/* Date Header & Day Navigator Bar */}
+      {/* 2. Selected Date Header & Return to Today Button */}
       <div className="flex items-center justify-between px-1">
-        <div className="flex items-center space-x-2">
-          <Calendar className="w-4 h-4 text-zen-forest" />
-          <h3 className="font-bold text-sm text-zen-text">
-            {isSelectedToday ? "Today's Routines" : `Routines for ${formattedSelectedDate}`}
+        <div className="flex items-center space-x-1.5">
+          <Calendar className="w-3.5 h-3.5 text-accent-emerald" />
+          <h3 className="text-xs font-bold uppercase tracking-wider text-zen-text-secondary">
+            {isSelectedToday ? "TODAY'S HABITS" : `HABITS FOR ${formattedSelectedDate}`}
           </h3>
         </div>
 
         {!isSelectedToday && (
           <button
             onClick={() => setSelectedDate(todayDate)}
-            className="text-xs font-semibold text-zen-forest flex items-center space-x-1 hover:underline"
+            className="text-xs font-bold text-accent-emerald flex items-center space-x-1 hover:underline"
           >
             <RotateCcw className="w-3 h-3" />
             <span>Jump to Today</span>
@@ -48,28 +48,33 @@ export const HabitScreen: React.FC = () => {
         )}
       </div>
 
-      {/* Habits List */}
+      {/* 3. Habits List */}
       <div className="space-y-2.5">
         {habits.map(habit => (
-          <HabitCard key={habit.id} habit={habit} selectedDate={selectedDate} />
+          <HabitCard
+            key={habit.id}
+            habit={habit}
+            selectedDateIso={selectedDate}
+          />
         ))}
 
         {habits.length === 0 && (
           <div className="p-8 rounded-3xl bg-zen-surface border border-dashed border-zen-border text-center flex flex-col items-center justify-center">
-            <Sparkles className="w-8 h-8 text-zen-muted/40 mb-2" />
-            <h4 className="text-sm font-bold text-zen-text mb-1">No Habits Tracked</h4>
-            <p className="text-xs text-zen-muted mb-4 max-w-xs">
-              Add your first personal routine or pick from our curated Nordic starter habits below:
+            <span className="text-3xl mb-2">🌿</span>
+            <h4 className="text-sm font-bold text-zen-text-primary mb-1">No habits tracked yet</h4>
+            <p className="text-xs text-zen-text-secondary mb-4 max-w-xs">
+              Add your first daily routine or pick from our curated starter habits:
             </p>
 
             <div className="flex flex-wrap justify-center gap-2 max-w-xs">
               {STARTER_HABITS.map(h => (
                 <button
-                  key={h.title}
-                  onClick={() => addHabit(h.title, h.type, h.targetMinutes, 'Daily', h.color)}
-                  className="px-3 py-1.5 rounded-xl text-xs font-medium bg-zen-card hover:bg-zen-forest hover:text-white border border-zen-border transition-all"
+                  key={h.name}
+                  onClick={() => addHabit(h)}
+                  className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-zen-surface-subtle hover:bg-accent-emerald hover:text-white border border-zen-border transition-all flex items-center space-x-1"
                 >
-                  + {h.title}
+                  <span>{h.icon}</span>
+                  <span>{h.name}</span>
                 </button>
               ))}
             </div>
@@ -77,16 +82,14 @@ export const HabitScreen: React.FC = () => {
         )}
       </div>
 
-      {/* Add Habit FAB / Action Button */}
-      <div className="pt-2">
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="w-full py-3 rounded-2xl bg-zen-surface hover:bg-zen-card border border-zen-border text-zen-forest font-semibold text-sm flex items-center justify-center space-x-2 shadow-sm transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add New Routine</span>
-        </button>
-      </div>
+      {/* Floating Action Button (FAB) matching Android */}
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="fixed right-5 bottom-20 z-20 w-12 h-12 rounded-2xl bg-accent-emerald text-white flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all"
+        title="Add new habit"
+      >
+        <Plus className="w-6 h-6" />
+      </button>
 
       <AddHabitModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>

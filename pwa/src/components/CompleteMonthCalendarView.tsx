@@ -1,51 +1,49 @@
 import React from 'react';
-import { useApp } from '../context/AppContext';
 
 interface CompleteMonthCalendarViewProps {
   currentDate: Date;
-  selectedDate: string;
-  onSelectDate: (dateStr: string) => void;
+  selectedDateIso: string;
+  completionMap: Record<string, number>; // dateIso -> ratio (0.0 to 1.0)
+  todayIso: string;
+  onSelectDate: (dateIso: string) => void;
 }
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+const HEATMAP_COLORS = [
+  'var(--zen-heatmap-0)',
+  '#C3DBC5',
+  '#8FB791',
+  '#57915B',
+  '#2E6B34',
+];
+
+const getHeatmapColor = (ratio: number | undefined): string => {
+  if (ratio === undefined || ratio <= 0) return HEATMAP_COLORS[0];
+  if (ratio <= 0.25) return HEATMAP_COLORS[1];
+  if (ratio <= 0.50) return HEATMAP_COLORS[2];
+  if (ratio <= 0.75) return HEATMAP_COLORS[3];
+  return HEATMAP_COLORS[4];
+};
+
 export const CompleteMonthCalendarView: React.FC<CompleteMonthCalendarViewProps> = ({
   currentDate,
-  selectedDate,
+  selectedDateIso,
+  completionMap,
+  todayIso,
   onSelectDate,
 }) => {
-  const { habits, habitLogs, todayDate } = useApp();
-
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  // First day of month offset
   const firstDay = new Date(year, month, 1);
-  const startingDayIndex = firstDay.getDay(); // 0 is Sunday
-
-  // Total days in month
+  const startingDayIndex = firstDay.getDay(); // 0 is Sun
   const totalDays = new Date(year, month + 1, 0).getDate();
 
-  // Helper to format YYYY-MM-DD
   const formatDayString = (day: number) => {
     const m = (month + 1).toString().padStart(2, '0');
     const d = day.toString().padStart(2, '0');
     return `${year}-${m}-${d}`;
-  };
-
-  // Compute heatmap color class for a specific day
-  const getDayHeatmapStyle = (dayStr: string) => {
-    const totalHabits = habits.length;
-    if (totalHabits === 0) return 'bg-zen-card text-zen-muted';
-
-    const logsForDay = habitLogs.filter(l => l.date === dayStr && l.completed);
-    const ratio = logsForDay.length / totalHabits;
-
-    if (ratio === 0) return 'bg-zen-card/80 text-zen-muted hover:bg-zen-card';
-    if (ratio <= 0.25) return 'bg-zen-accent/25 text-zen-text hover:bg-zen-accent/35';
-    if (ratio <= 0.5) return 'bg-zen-accent/50 text-white font-medium hover:bg-zen-accent/60';
-    if (ratio <= 0.75) return 'bg-zen-accent/80 text-white font-semibold hover:bg-zen-accent/90';
-    return 'bg-zen-forest text-white font-bold shadow-sm';
   };
 
   return (
@@ -53,7 +51,7 @@ export const CompleteMonthCalendarView: React.FC<CompleteMonthCalendarViewProps>
       {/* Weekday Labels */}
       <div className="grid grid-cols-7 gap-1.5 mb-2 text-center">
         {WEEKDAYS.map(w => (
-          <span key={w} className="text-[11px] font-semibold text-zen-muted uppercase tracking-wider">
+          <span key={w} className="text-[11px] font-semibold text-zen-text-secondary uppercase tracking-wider">
             {w}
           </span>
         ))}
@@ -69,24 +67,29 @@ export const CompleteMonthCalendarView: React.FC<CompleteMonthCalendarViewProps>
         {/* Days of month */}
         {Array.from({ length: totalDays }).map((_, i) => {
           const dayNumber = i + 1;
-          const dayStr = formatDayString(dayNumber);
-          const isToday = dayStr === todayDate;
-          const isSelected = dayStr === selectedDate;
-          const heatmapClass = getDayHeatmapStyle(dayStr);
+          const dayIso = formatDayString(dayNumber);
+          const isToday = dayIso === todayIso;
+          const isSelected = dayIso === selectedDateIso;
+          const ratio = completionMap[dayIso];
+          const cellColor = getHeatmapColor(ratio);
+          const isDarkShade = (ratio || 0) > 0.5;
 
           return (
             <button
-              key={dayStr}
-              onClick={() => onSelectDate(dayStr)}
-              className={`h-9 rounded-xl flex items-center justify-center text-xs relative transition-all duration-150 transform active:scale-95 ${heatmapClass} ${
+              key={dayIso}
+              onClick={() => onSelectDate(dayIso)}
+              style={{ backgroundColor: cellColor }}
+              className={`h-9 rounded-xl flex items-center justify-center text-xs relative transition-all duration-150 transform active:scale-95 ${
+                isDarkShade ? 'text-white font-bold' : 'text-zen-text-primary font-medium'
+              } ${
                 isSelected
-                  ? 'ring-2 ring-zen-forest ring-offset-2 ring-offset-zen-surface scale-105 z-10'
+                  ? 'ring-2 ring-zen-border-selected ring-offset-2 ring-offset-zen-surface scale-105 z-10'
                   : ''
-              } ${isToday && !isSelected ? 'border border-zen-forest font-bold' : ''}`}
+              } ${isToday && !isSelected ? 'border-2 border-accent-emerald font-bold' : ''}`}
             >
               <span>{dayNumber}</span>
               {isToday && (
-                <span className="absolute bottom-1 w-1 h-1 bg-zen-forest rounded-full" />
+                <span className="absolute bottom-1 w-1 h-1 bg-accent-emerald rounded-full" />
               )}
             </button>
           );
@@ -94,16 +97,18 @@ export const CompleteMonthCalendarView: React.FC<CompleteMonthCalendarViewProps>
       </div>
 
       {/* Heatmap Legend */}
-      <div className="flex items-center justify-between mt-4 pt-3 border-t border-zen-border text-[11px] text-zen-muted">
-        <span>Less consistent</span>
-        <div className="flex items-center space-x-1.5">
-          <span className="w-3 h-3 rounded bg-zen-card border border-zen-border" />
-          <span className="w-3 h-3 rounded bg-zen-accent/25" />
-          <span className="w-3 h-3 rounded bg-zen-accent/50" />
-          <span className="w-3 h-3 rounded bg-zen-accent/80" />
-          <span className="w-3 h-3 rounded bg-zen-forest" />
+      <div className="flex items-center justify-between mt-3 pt-3 border-t border-zen-border text-[11px] text-zen-text-secondary">
+        <span>Less</span>
+        <div className="flex items-center space-x-1">
+          {HEATMAP_COLORS.map((c, i) => (
+            <span
+              key={i}
+              className="w-3 h-3 rounded-[3px] border border-black/5 dark:border-white/5"
+              style={{ backgroundColor: c }}
+            />
+          ))}
         </div>
-        <span>High rhythm</span>
+        <span>More</span>
       </div>
     </div>
   );

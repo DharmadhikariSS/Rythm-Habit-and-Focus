@@ -1,292 +1,341 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import confetti from 'canvas-confetti';
-import { Timer, Habit, HabitLog, SessionRecord, NavTab, BehavioralInsight } from '../types';
+import { Subject, Habit, HabitEntry, StudySession, NavTab, AnalyticsLens, Timeframe, BehavioralInsight } from '../types';
 import { storage } from '../services/storage';
 import { soundService } from '../services/sound';
 import { BehavioralIntelligenceEngine } from '../services/aiEngine';
 
 interface AppContextType {
-  timers: Timer[];
+  subjects: Subject[];
   habits: Habit[];
-  habitLogs: HabitLog[];
-  sessions: SessionRecord[];
+  habitEntries: HabitEntry[];
+  sessions: StudySession[];
   activeTab: NavTab;
   selectedDate: string;
+  activeLens: AnalyticsLens;
+  timeframe: Timeframe;
   insight: BehavioralInsight;
+  activeHabitTimers: Record<string, { isRunning: boolean; elapsedSeconds: number }>;
+  todayDate: string;
   setActiveTab: (tab: NavTab) => void;
   setSelectedDate: (date: string) => void;
-  addTimer: (title: string, minutes: number, category: string, color?: string) => void;
-  startTimer: (id: string) => void;
-  pauseTimer: (id: string) => void;
-  resetTimer: (id: string) => void;
-  completeTimer: (id: string) => void;
-  deleteTimer: (id: string) => void;
-  addHabit: (title: string, type: 'check' | 'duration', targetMinutes: number, frequency?: string, color?: string) => void;
-  toggleHabit: (habitId: string, date: string) => void;
+  setActiveLens: (lens: AnalyticsLens) => void;
+  setTimeframe: (tf: Timeframe) => void;
+  // Subject actions
+  addSubject: (name: string, color: string, targetWeeklyHours: number) => void;
+  toggleSubjectTimer: (id: string) => void;
+  stopAndSaveSubjectTimer: (id: string) => void;
+  deleteSubject: (id: string) => void;
+  // Habit actions
+  addHabit: (habit: Omit<Habit, 'id' | 'streakDays' | 'bestStreak' | 'createdAt'>) => void;
+  toggleHabitCheck: (habitId: string, dateIso: string) => void;
+  toggleHabitRestDay: (habitId: string, dateIso: string) => void;
+  incrementHabitCount: (habitId: string, dateIso: string) => void;
+  decrementHabitCount: (habitId: string, dateIso: string) => void;
+  toggleHabitTimer: (habitId: string) => void;
+  resetHabitTimer: (habitId: string) => void;
   deleteHabit: (id: string) => void;
+  // Export
   exportData: () => void;
-  todayDate: string;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const getTodayFormatted = (): string => {
-  return new Date().toISOString().split('T')[0];
-};
+const getTodayIso = (): string => new Date().toISOString().split('T')[0];
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [timers, setTimers] = useState<Timer[]>(() => storage.getTimers());
+  const [subjects, setSubjects] = useState<Subject[]>(() => storage.getSubjects());
   const [habits, setHabits] = useState<Habit[]>(() => storage.getHabits());
-  const [habitLogs, setHabitLogs] = useState<HabitLog[]>(() => storage.getHabitLogs());
-  const [sessions, setSessions] = useState<SessionRecord[]>(() => storage.getSessions());
+  const [habitEntries, setHabitEntries] = useState<HabitEntry[]>(() => storage.getEntries());
+  const [sessions, setSessions] = useState<StudySession[]>(() => storage.getSessions());
   const [activeTab, setActiveTab] = useState<NavTab>('timers');
-  const [selectedDate, setSelectedDate] = useState<string>(getTodayFormatted());
+  const [selectedDate, setSelectedDate] = useState<string>(getTodayIso());
+  const [activeLens, setActiveLens] = useState<AnalyticsLens>('SUBJECTS');
+  const [timeframe, setTimeframe] = useState<Timeframe>('TODAY');
+  const [activeHabitTimers, setActiveHabitTimers] = useState<Record<string, { isRunning: boolean; elapsedSeconds: number }>>({});
 
-  const todayDate = getTodayFormatted();
+  const todayDate = getTodayIso();
 
-  // Save to storage on changes
-  useEffect(() => {
-    storage.saveTimers(timers);
-  }, [timers]);
+  // Storage persistence
+  useEffect(() => { storage.saveSubjects(subjects); }, [subjects]);
+  useEffect(() => { storage.saveHabits(habits); }, [habits]);
+  useEffect(() => { storage.saveEntries(habitEntries); }, [habitEntries]);
+  useEffect(() => { storage.saveSessions(sessions); }, [sessions]);
 
-  useEffect(() => {
-    storage.saveHabits(habits);
-  }, [habits]);
-
-  useEffect(() => {
-    storage.saveHabitLogs(habitLogs);
-  }, [habitLogs]);
-
-  useEffect(() => {
-    storage.saveSessions(sessions);
-  }, [sessions]);
-
-  // Real-time Timer Interval Tick
-  const timersRef = useRef(timers);
-  timersRef.current = timers;
+  // Master Stopwatch Runner
+  const subjectsRef = useRef(subjects);
+  subjectsRef.current = subjects;
+  const habitTimersRef = useRef(activeHabitTimers);
+  habitTimersRef.current = activeHabitTimers;
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const running = timersRef.current.filter(t => t.status === 'running');
-      if (running.length === 0) return;
+      // 1. Tick running subjects
+      const hasRunningSubjects = subjectsRef.current.some(s => s.isRunning);
+      if (hasRunningSubjects) {
+        setSubjects(prev =>
+          prev.map(s => (s.isRunning ? { ...s, totalElapsedMs: s.totalElapsedMs + 1000 } : s))
+        );
+      }
 
-      setTimers(prevTimers =>
-        prevTimers.map(timer => {
-          if (timer.status !== 'running') return timer;
-
-          const nextRemaining = timer.remainingSeconds - 1;
-          if (nextRemaining <= 0) {
-            // Timer Completed!
-            soundService.playZenBowl();
-            confetti({
-              particleCount: 60,
-              spread: 70,
-              origin: { y: 0.6 },
-              colors: ['#2D5A43', '#52B788', '#74C69D', '#E8EFE9']
-            });
-
-            // Log focus session record
-            const durationMins = Math.max(1, Math.round(timer.totalSeconds / 60));
-            const newSession: SessionRecord = {
-              id: `session-${Date.now()}`,
-              timerTitle: timer.title,
-              durationMinutes: durationMins,
-              completedAt: Date.now(),
-              category: timer.category,
-              date: getTodayFormatted(),
-            };
-            setSessions(prev => [newSession, ...prev]);
-
-            return {
-              ...timer,
-              remainingSeconds: 0,
-              status: 'completed' as const,
-            };
-          }
-
-          return {
-            ...timer,
-            remainingSeconds: nextRemaining,
-          };
-        })
+      // 2. Tick running in-card habit timers
+      const runningHabitIds = Object.keys(habitTimersRef.current).filter(
+        id => habitTimersRef.current[id]?.isRunning
       );
+      if (runningHabitIds.length > 0) {
+        setActiveHabitTimers(prev => {
+          const updated = { ...prev };
+          runningHabitIds.forEach(id => {
+            if (updated[id]?.isRunning) {
+              updated[id] = {
+                ...updated[id],
+                elapsedSeconds: updated[id].elapsedSeconds + 1,
+              };
+            }
+          });
+          return updated;
+        });
+      }
     }, 1000);
 
     return () => clearInterval(interval);
   }, []);
 
-  // Timer Handlers
-  const addTimer = (title: string, minutes: number, category: string, color = '#2D5A43') => {
-    const totalSecs = Math.max(60, minutes * 60);
-    const newTimer: Timer = {
-      id: `timer-${Date.now()}`,
-      title: title.trim() || 'Focus Session',
-      totalSeconds: totalSecs,
-      remainingSeconds: totalSecs,
-      status: 'idle',
-      category: category || 'Study',
+  // Subject Handlers
+  const addSubject = (name: string, color: string, targetWeeklyHours: number) => {
+    const newSub: Subject = {
+      id: `sub-${Date.now()}`,
+      name: name.trim() || 'Focus Subject',
       color,
-      createdAt: Date.now(),
+      targetWeeklyHours,
+      totalElapsedMs: 0,
+      isRunning: false,
     };
-    setTimers(prev => [newTimer, ...prev]);
+    setSubjects(prev => [...prev, newSub]);
   };
 
-  const startTimer = (id: string) => {
-    setTimers(prev =>
-      prev.map(t => {
-        if (t.id === id) {
-          const rem = t.remainingSeconds <= 0 ? t.totalSeconds : t.remainingSeconds;
-          return { ...t, remainingSeconds: rem, status: 'running' };
-        }
-        return t;
-      })
+  const toggleSubjectTimer = (id: string) => {
+    setSubjects(prev =>
+      prev.map(s => (s.id === id ? { ...s, isRunning: !s.isRunning } : s))
     );
   };
 
-  const pauseTimer = (id: string) => {
-    setTimers(prev =>
-      prev.map(t => (t.id === id ? { ...t, status: 'paused' } : t))
-    );
-  };
-
-  const resetTimer = (id: string) => {
-    setTimers(prev =>
-      prev.map(t => (t.id === id ? { ...t, remainingSeconds: t.totalSeconds, status: 'idle' } : t))
-    );
-  };
-
-  const completeTimer = (id: string) => {
-    const target = timers.find(t => t.id === id);
-    if (!target) return;
+  const stopAndSaveSubjectTimer = (id: string) => {
+    const target = subjects.find(s => s.id === id);
+    if (!target || target.totalElapsedMs <= 0) return;
 
     soundService.playZenBowl();
     confetti({
       particleCount: 50,
       spread: 60,
       origin: { y: 0.6 },
-      colors: ['#2D5A43', '#52B788', '#74C69D']
+      colors: ['#437A55', '#386B80', '#52B788', '#B55D46']
     });
 
-    const elapsedSeconds = target.totalSeconds - target.remainingSeconds;
-    const durationMins = Math.max(1, Math.round((elapsedSeconds > 0 ? elapsedSeconds : target.totalSeconds) / 60));
-
-    const newSession: SessionRecord = {
-      id: `session-${Date.now()}`,
-      timerTitle: target.title,
-      durationMinutes: durationMins,
+    const durationSeconds = Math.max(1, Math.round(target.totalElapsedMs / 1000));
+    const newSession: StudySession = {
+      id: `sess-${Date.now()}`,
+      subjectId: target.id,
+      subjectName: target.name,
+      durationSeconds,
       completedAt: Date.now(),
-      category: target.category,
-      date: getTodayFormatted(),
+      subjectColor: target.color,
+      dateIso: getTodayIso(),
     };
-    setSessions(prev => [newSession, ...prev]);
 
-    setTimers(prev =>
-      prev.map(t => (t.id === id ? { ...t, remainingSeconds: 0, status: 'completed' } : t))
+    setSessions(prev => [newSession, ...prev]);
+    setSubjects(prev =>
+      prev.map(s => (s.id === id ? { ...s, isRunning: false, totalElapsedMs: 0 } : s))
     );
   };
 
-  const deleteTimer = (id: string) => {
-    setTimers(prev => prev.filter(t => t.id !== id));
+  const deleteSubject = (id: string) => {
+    setSubjects(prev => prev.filter(s => s.id !== id));
   };
 
   // Habit Handlers
-  const addHabit = (
-    title: string,
-    type: 'check' | 'duration',
-    targetMinutes: number,
-    frequency = 'Daily',
-    color = '#2D5A43'
-  ) => {
+  const addHabit = (habitData: Omit<Habit, 'id' | 'streakDays' | 'bestStreak' | 'createdAt'>) => {
     const newHabit: Habit = {
+      ...habitData,
       id: `habit-${Date.now()}`,
-      title: title.trim(),
-      type,
-      targetDurationMinutes: targetMinutes,
-      frequency,
-      color,
-      streakCurrent: 0,
-      streakBest: 0,
+      streakDays: 0,
+      bestStreak: 0,
       createdAt: Date.now(),
     };
     setHabits(prev => [...prev, newHabit]);
   };
 
-  const toggleHabit = (habitId: string, date: string) => {
+  const toggleHabitCheck = (habitId: string, dateIso: string) => {
     soundService.playGentleTap();
 
     let newCompletedState = false;
-    setHabitLogs(prev => {
-      const existing = prev.find(l => l.habitId === habitId && l.date === date);
+    setHabitEntries(prev => {
+      const existing = prev.find(e => e.habitId === habitId && e.dateIso === dateIso);
       if (existing) {
-        newCompletedState = !existing.completed;
-        return prev.map(l =>
-          l.id === existing.id ? { ...l, completed: newCompletedState } : l
+        newCompletedState = !existing.isCompleted;
+        return prev.map(e =>
+          e.id === existing.id ? { ...e, isCompleted: newCompletedState } : e
         );
       } else {
         newCompletedState = true;
-        const newLog: HabitLog = {
-          id: `log-${Date.now()}`,
+        const newEntry: HabitEntry = {
+          id: `entry-${Date.now()}`,
           habitId,
-          date,
-          completed: true,
-          durationMinutes: 0,
+          dateIso,
+          isCompleted: true,
+          loggedDurationSeconds: 0,
+          currentCount: 0,
+          isRestDay: false,
         };
-        return [...prev, newLog];
+        return [...prev, newEntry];
       }
     });
 
-    // Update streak if toggling today's log
-    if (date === todayDate) {
+    if (dateIso === todayDate) {
       setHabits(prev =>
         prev.map(h => {
           if (h.id !== habitId) return h;
-          const updatedCurrent = newCompletedState ? h.streakCurrent + 1 : Math.max(0, h.streakCurrent - 1);
-          const updatedBest = Math.max(h.streakBest, updatedCurrent);
+          const updated = newCompletedState ? h.streakDays + 1 : Math.max(0, h.streakDays - 1);
           return {
             ...h,
-            streakCurrent: updatedCurrent,
-            streakBest: updatedBest,
+            streakDays: updated,
+            bestStreak: Math.max(h.bestStreak, updated),
           };
         })
       );
     }
   };
 
+  const toggleHabitRestDay = (habitId: string, dateIso: string) => {
+    setHabitEntries(prev => {
+      const existing = prev.find(e => e.habitId === habitId && e.dateIso === dateIso);
+      if (existing) {
+        return prev.map(e => (e.id === existing.id ? { ...e, isRestDay: !e.isRestDay } : e));
+      } else {
+        return [
+          ...prev,
+          {
+            id: `entry-${Date.now()}`,
+            habitId,
+            dateIso,
+            isCompleted: false,
+            loggedDurationSeconds: 0,
+            currentCount: 0,
+            isRestDay: true,
+          },
+        ];
+      }
+    });
+  };
+
+  const incrementHabitCount = (habitId: string, dateIso: string) => {
+    soundService.playGentleTap();
+    setHabitEntries(prev => {
+      const existing = prev.find(e => e.habitId === habitId && e.dateIso === dateIso);
+      const targetHabit = habits.find(h => h.id === habitId);
+      const targetCount = targetHabit?.targetCount || 1;
+
+      if (existing) {
+        const nextCount = existing.currentCount + 1;
+        const isCompleted = nextCount >= targetCount;
+        return prev.map(e =>
+          e.id === existing.id ? { ...e, currentCount: nextCount, isCompleted } : e
+        );
+      } else {
+        const nextCount = 1;
+        const isCompleted = nextCount >= targetCount;
+        return [
+          ...prev,
+          {
+            id: `entry-${Date.now()}`,
+            habitId,
+            dateIso,
+            isCompleted,
+            loggedDurationSeconds: 0,
+            currentCount: nextCount,
+            isRestDay: false,
+          },
+        ];
+      }
+    });
+  };
+
+  const decrementHabitCount = (habitId: string, dateIso: string) => {
+    setHabitEntries(prev => {
+      const existing = prev.find(e => e.habitId === habitId && e.dateIso === dateIso);
+      const targetHabit = habits.find(h => h.id === habitId);
+      const targetCount = targetHabit?.targetCount || 1;
+
+      if (existing && existing.currentCount > 0) {
+        const nextCount = existing.currentCount - 1;
+        const isCompleted = nextCount >= targetCount;
+        return prev.map(e =>
+          e.id === existing.id ? { ...e, currentCount: nextCount, isCompleted } : e
+        );
+      }
+      return prev;
+    });
+  };
+
+  const toggleHabitTimer = (habitId: string) => {
+    setActiveHabitTimers(prev => {
+      const cur = prev[habitId] || { isRunning: false, elapsedSeconds: 0 };
+      return {
+        ...prev,
+        [habitId]: { ...cur, isRunning: !cur.isRunning },
+      };
+    });
+  };
+
+  const resetHabitTimer = (habitId: string) => {
+    setActiveHabitTimers(prev => ({
+      ...prev,
+      [habitId]: { isRunning: false, elapsedSeconds: 0 },
+    }));
+  };
+
   const deleteHabit = (id: string) => {
     setHabits(prev => prev.filter(h => h.id !== id));
-    setHabitLogs(prev => prev.filter(l => l.habitId !== id));
+    setHabitEntries(prev => prev.filter(e => e.habitId !== id));
   };
 
   const exportData = () => {
-    storage.exportCSV(sessions, habitLogs);
+    storage.exportCSV(habits, habitEntries, subjects, sessions);
   };
 
-  // Compute AI behavioral insight
-  const insight = BehavioralIntelligenceEngine.analyze(habits, habitLogs, sessions, todayDate);
+  const insight = BehavioralIntelligenceEngine.analyze(habits, habitEntries, sessions, todayDate);
 
   return (
     <AppContext.Provider
       value={{
-        timers,
+        subjects,
         habits,
-        habitLogs,
+        habitEntries,
         sessions,
         activeTab,
         selectedDate,
+        activeLens,
+        timeframe,
         insight,
+        activeHabitTimers,
+        todayDate,
         setActiveTab,
         setSelectedDate,
-        addTimer,
-        startTimer,
-        pauseTimer,
-        resetTimer,
-        completeTimer,
-        deleteTimer,
+        setActiveLens,
+        setTimeframe,
+        addSubject,
+        toggleSubjectTimer,
+        stopAndSaveSubjectTimer,
+        deleteSubject,
         addHabit,
-        toggleHabit,
+        toggleHabitCheck,
+        toggleHabitRestDay,
+        incrementHabitCount,
+        decrementHabitCount,
+        toggleHabitTimer,
+        resetHabitTimer,
         deleteHabit,
         exportData,
-        todayDate,
       }}
     >
       {children}
@@ -296,8 +345,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
 export const useApp = () => {
   const context = useContext(AppContext);
-  if (!context) {
-    throw new Error('useApp must be used within an AppProvider');
-  }
+  if (!context) throw new Error('useApp must be used within an AppProvider');
   return context;
 };

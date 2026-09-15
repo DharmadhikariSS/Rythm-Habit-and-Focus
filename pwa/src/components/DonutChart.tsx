@@ -1,107 +1,109 @@
 import React from 'react';
-import { SessionRecord } from '../types';
 
-interface DonutChartProps {
-  sessions: SessionRecord[];
+export interface DonutSliceData {
+  label: string;
+  value: number; // minutes or seconds
+  color: string;
+  percentage: number;
 }
 
-const CATEGORY_COLORS: Record<string, string> = {
-  Study: '#2D5A43',
-  Code: '#52B788',
-  Reading: '#74C69D',
-  Work: '#40916C',
-  Break: '#A7C957',
-  Creative: '#606C38',
-  Other: '#386641',
-};
+interface DonutChartProps {
+  slices: DonutSliceData[];
+  totalText: string;
+  size?: number;
+  strokeWidth?: number;
+}
 
-export const DonutChart: React.FC<DonutChartProps> = ({ sessions }) => {
-  // Aggregate minutes by category
-  const categoryTotals = sessions.reduce((acc, s) => {
-    acc[s.category] = (acc[s.category] || 0) + s.durationMinutes;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const totalMinutes = Object.values(categoryTotals).reduce((a, b) => a + b, 0);
-
-  if (totalMinutes === 0) {
-    return (
-      <div className="py-8 flex flex-col items-center justify-center text-center">
-        <p className="text-xs text-zen-muted font-medium">No focus sessions recorded yet.</p>
-        <span className="text-[11px] text-zen-subtle mt-1">Start a timer to see category breakdown.</span>
-      </div>
-    );
-  }
-
-  // Calculate SVG arc paths
-  const radius = 50;
-  const strokeWidth = 18;
+export const DonutChart: React.FC<DonutChartProps> = ({
+  slices,
+  totalText,
+  size = 140,
+  strokeWidth = 16,
+}) => {
+  const total = slices.reduce((acc, s) => acc + s.value, 0);
+  const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
 
-  let accumulatedPercent = 0;
-  const slices = Object.entries(categoryTotals).map(([cat, mins]) => {
-    const percent = mins / totalMinutes;
-    const dashoffset = circumference - percent * circumference;
-    const rotation = accumulatedPercent * 360 - 90;
-    accumulatedPercent += percent;
-
-    return {
-      category: cat,
-      minutes: mins,
-      percent: Math.round(percent * 100),
-      color: CATEGORY_COLORS[cat] || CATEGORY_COLORS.Other,
-      dasharray: circumference,
-      dashoffset,
-      rotation,
-    };
-  });
+  let accumulatedAngle = -90; // Start at top
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-around gap-4 pt-2">
+    <div className="flex flex-col sm:flex-row items-center justify-around gap-4 pt-1">
       {/* SVG Donut */}
-      <div className="relative w-36 h-36 flex items-center justify-center flex-shrink-0">
-        <svg className="w-full h-full" viewBox="0 0 130 130">
-          {slices.map((slice, i) => (
+      <div className="relative flex items-center justify-center flex-shrink-0" style={{ width: size, height: size }}>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+          {total <= 0 ? (
+            /* Empty Track Fallback */
             <circle
-              key={i}
-              cx="65"
-              cy="65"
+              cx={size / 2}
+              cy={size / 2}
               r={radius}
               fill="none"
-              stroke={slice.color}
+              stroke="var(--zen-border)"
               strokeWidth={strokeWidth}
-              strokeDasharray={slice.dasharray}
-              strokeDashoffset={slice.dashoffset}
-              style={{
-                transformOrigin: 'center',
-                transform: `rotate(${slice.rotation}deg)`,
-                transition: 'stroke-dashoffset 0.6s ease',
-              }}
             />
-          ))}
+          ) : (
+            slices.map((slice, i) => {
+              const fraction = slice.value / total;
+              const sweepAngle = Math.max(0, fraction * 360 - (slices.length > 1 ? 2.5 : 0));
+              const strokeLength = (sweepAngle / 360) * circumference;
+              const strokeDasharray = `${strokeLength} ${circumference}`;
+
+              const rotation = accumulatedAngle;
+              accumulatedAngle += fraction * 360;
+
+              return (
+                <circle
+                  key={i}
+                  cx={size / 2}
+                  cy={size / 2}
+                  r={radius}
+                  fill="none"
+                  stroke={slice.color}
+                  strokeWidth={strokeWidth}
+                  strokeDasharray={strokeDasharray}
+                  strokeDashoffset={0}
+                  style={{
+                    transformOrigin: 'center',
+                    transform: `rotate(${rotation}deg)`,
+                    transition: 'stroke-dasharray 0.5s ease',
+                  }}
+                />
+              );
+            })
+          )}
         </svg>
 
-        {/* Center Label */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-          <span className="text-xl font-bold tracking-tight text-zen-text">{totalMinutes}m</span>
-          <span className="text-[10px] text-zen-muted uppercase tracking-wider font-semibold">Total</span>
+        {/* Center Text */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center select-none">
+          <span className="text-base font-bold text-zen-text-primary tracking-tight font-mono">
+            {totalText}
+          </span>
+          <span className="text-[10px] font-semibold text-zen-text-secondary uppercase tracking-wider">
+            Total Focus
+          </span>
         </div>
       </div>
 
-      {/* Legend List */}
-      <div className="flex flex-col space-y-2 w-full max-w-[160px]">
-        {slices.map(slice => (
-          <div key={slice.category} className="flex items-center justify-between text-xs">
-            <div className="flex items-center space-x-2 truncate">
-              <span
-                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                style={{ backgroundColor: slice.color }}
-              />
-              <span className="font-medium text-zen-text truncate">{slice.category}</span>
+      {/* Legend */}
+      <div className="flex flex-col space-y-1.5 w-full max-w-[170px]">
+        {slices.length === 0 ? (
+          <span className="text-xs text-zen-text-secondary text-center">No focus data recorded</span>
+        ) : (
+          slices.map(slice => (
+            <div key={slice.label} className="flex items-center justify-between text-xs">
+              <div className="flex items-center space-x-2 truncate">
+                <span
+                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: slice.color }}
+                />
+                <span className="font-semibold text-zen-text-primary truncate">{slice.label}</span>
+              </div>
+              <span className="text-zen-text-secondary font-mono font-bold ml-2">
+                {slice.percentage}%
+              </span>
             </div>
-            <span className="text-zen-muted font-semibold ml-2">{slice.minutes}m</span>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );

@@ -26,7 +26,7 @@ export const TopNavbar: React.FC = () => {
           <button
             onClick={() => soundService.playZenBowl()}
             title="Mindful singing bowl chime"
-            className="w-9 h-9 flex items-center justify-center rounded-xl bg-zen-card hover:bg-zen-border text-zen-muted hover:text-zen-forest transition-colors"
+            className="w-9 h-9 flex items-center justify-center rounded-xl bg-zen-card hover:bg-zen-border text-zen-muted hover:text-accent-emerald transition-colors"
           >
             <Bell className="w-4 h-4" />
           </button>
@@ -35,9 +35,9 @@ export const TopNavbar: React.FC = () => {
           <button
             onClick={toggleTheme}
             title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            className="w-9 h-9 flex items-center justify-center rounded-xl bg-zen-card hover:bg-zen-border text-zen-muted hover:text-zen-forest transition-colors"
+            className="w-9 h-9 flex items-center justify-center rounded-xl bg-zen-card hover:bg-zen-border text-zen-muted hover:text-accent-emerald transition-colors"
           >
-            {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-zen-forest" />}
+            {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-accent-emerald" />}
           </button>
         </div>
       </div>
@@ -46,8 +46,8 @@ export const TopNavbar: React.FC = () => {
 };
 
 export const BottomNavbar: React.FC = () => {
-  const { activeTab, setActiveTab, timers } = useApp();
-  const runningCount = timers.filter(t => t.status === 'running').length;
+  const { activeTab, setActiveTab, subjects } = useApp();
+  const runningCount = subjects.filter(s => s.isRunning).length;
 
   const tabs: { id: NavTab; label: string; icon: React.ReactNode; badge?: number }[] = [
     { id: 'timers', label: 'Timers', icon: <TimerIcon className="w-5 h-5" />, badge: runningCount },
@@ -66,21 +66,21 @@ export const BottomNavbar: React.FC = () => {
               onClick={() => setActiveTab(tab.id)}
               className={`flex-1 py-1.5 flex flex-col items-center justify-center relative rounded-xl transition-all duration-200 ${
                 isActive
-                  ? 'text-zen-forest font-semibold'
+                  ? 'text-accent-emerald font-semibold'
                   : 'text-zen-muted hover:text-zen-text'
               }`}
             >
               <div className="relative">
                 {tab.icon}
                 {tab.badge && tab.badge > 0 ? (
-                  <span className="absolute -top-1 -right-2 bg-zen-accent text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
+                  <span className="absolute -top-1 -right-2 bg-accent-terracotta text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
                     {tab.badge}
                   </span>
                 ) : null}
               </div>
               <span className="text-[11px] mt-1 tracking-tight">{tab.label}</span>
               {isActive && (
-                <span className="w-1.5 h-1.5 bg-zen-forest rounded-full mt-0.5" />
+                <span className="w-1.5 h-1.5 bg-accent-emerald rounded-full mt-0.5" />
               )}
             </button>
           );

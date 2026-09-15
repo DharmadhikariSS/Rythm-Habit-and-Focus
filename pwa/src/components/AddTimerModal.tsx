@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Sparkles, Clock } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 interface AddTimerModalProps {
@@ -7,157 +7,139 @@ interface AddTimerModalProps {
   onClose: () => void;
 }
 
-const PRESETS = [
-  { label: 'Pomodoro', minutes: 25, category: 'Study', color: '#2D5A43' },
-  { label: 'Deep Work', minutes: 45, category: 'Code', color: '#52B788' },
-  { label: 'Short Break', minutes: 5, category: 'Break', color: '#74C69D' },
-  { label: 'Long Break', minutes: 15, category: 'Break', color: '#40916C' },
-  { label: 'Quick Sprint', minutes: 10, category: 'Focus', color: '#2D5A43' },
+const SOOTHING_COLORS = [
+  { name: 'Emerald', hex: '#437A55' },
+  { name: 'Ocean', hex: '#386B80' },
+  { name: 'Terracotta', hex: '#B55D46' },
+  { name: 'Lavender', hex: '#6B5F8C' },
+  { name: 'Ochre', hex: '#A67B34' },
+  { name: 'Rose', hex: '#9E4E68' },
+  { name: 'Sky', hex: '#3A7D99' },
+  { name: 'Sage', hex: '#5D8464' },
 ];
 
-const CATEGORIES = ['Study', 'Code', 'Reading', 'Work', 'Break', 'Creative'];
-const COLORS = ['#2D5A43', '#52B788', '#74C69D', '#40916C', '#1B4332', '#606C38'];
+const WEEKLY_GOAL_OPTIONS = [3, 5, 8, 10, 15, 20];
 
 export const AddTimerModal: React.FC<AddTimerModalProps> = ({ isOpen, onClose }) => {
-  const { addTimer } = useApp();
+  const { addSubject } = useApp();
 
-  const [title, setTitle] = useState('');
-  const [duration, setDuration] = useState(25);
-  const [category, setCategory] = useState('Study');
-  const [selectedColor, setSelectedColor] = useState('#2D5A43');
+  const [name, setName] = useState('');
+  const [selectedWeeklyHours, setSelectedWeeklyHours] = useState(5);
+  const [selectedColor, setSelectedColor] = useState(SOOTHING_COLORS[0].hex);
 
   if (!isOpen) return null;
 
-  const handleApplyPreset = (preset: typeof PRESETS[0]) => {
-    setTitle(preset.label);
-    setDuration(preset.minutes);
-    setCategory(preset.category);
-    setSelectedColor(preset.color);
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (duration <= 0) return;
-    addTimer(title.trim() || `${duration}m Focus`, duration, category, selectedColor);
+    if (!name.trim()) return;
+
+    addSubject(name.trim(), selectedColor, selectedWeeklyHours);
+    setName('');
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in">
       <div className="w-full max-w-sm rounded-3xl bg-zen-surface border border-zen-border p-6 shadow-xl transition-all">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-zen-border">
-          <div className="flex items-center space-x-2">
-            <Clock className="w-5 h-5 text-zen-forest" />
-            <h2 className="text-lg font-bold text-zen-text tracking-tight">New Focus Timer</h2>
-          </div>
+        {/* Header */}
+        <div className="flex items-center justify-between pb-3 border-b border-zen-border">
+          <h2 className="text-lg font-bold text-zen-text-primary tracking-tight">
+            Add Focus Subject
+          </h2>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl text-zen-muted hover:text-zen-text hover:bg-zen-card transition-colors"
+            className="p-1 rounded-xl text-zen-text-secondary hover:text-zen-text-primary hover:bg-zen-surface-subtle transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-          {/* Quick Presets */}
+          {/* Subject Name Input */}
           <div>
-            <span className="text-xs font-semibold text-zen-muted uppercase tracking-wider flex items-center gap-1 mb-2">
-              <Sparkles className="w-3.5 h-3.5 text-zen-accent" /> Quick Presets
-            </span>
-            <div className="flex flex-wrap gap-2">
-              {PRESETS.map(preset => (
-                <button
-                  key={preset.label}
-                  type="button"
-                  onClick={() => handleApplyPreset(preset)}
-                  className="px-3 py-1.5 rounded-xl text-xs font-medium bg-zen-card hover:bg-zen-forest hover:text-white border border-zen-border transition-all"
-                >
-                  {preset.label} ({preset.minutes}m)
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Title Input */}
-          <div>
-            <label className="block text-xs font-semibold text-zen-muted uppercase tracking-wider mb-1.5">
-              Timer Name
+            <label className="block text-xs font-semibold text-zen-text-secondary uppercase tracking-wider mb-1.5">
+              Subject Name
             </label>
             <input
               type="text"
-              placeholder="e.g. System Design Study"
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-2xl bg-zen-card border border-zen-border text-zen-text text-sm focus:outline-none focus:ring-2 focus:ring-zen-forest/30"
+              placeholder="e.g. Study, Gym, Reading"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              className="w-full px-3.5 py-2.5 rounded-xl bg-zen-surface-subtle border border-zen-border text-zen-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent-emerald/40"
+              autoFocus
             />
           </div>
 
-          {/* Duration Input */}
+          {/* Weekly Target Hours */}
           <div>
-            <label className="block text-xs font-semibold text-zen-muted uppercase tracking-wider mb-1.5">
-              Duration (Minutes)
+            <label className="block text-[11px] font-semibold text-zen-text-secondary uppercase tracking-wider mb-1.5">
+              Weekly Target Hours
             </label>
-            <input
-              type="number"
-              min="1"
-              max="240"
-              value={duration}
-              onChange={e => setDuration(parseInt(e.target.value) || 1)}
-              className="w-full px-3.5 py-2.5 rounded-2xl bg-zen-card border border-zen-border text-zen-text text-sm focus:outline-none focus:ring-2 focus:ring-zen-forest/30"
-            />
-          </div>
-
-          {/* Category Selector */}
-          <div>
-            <label className="block text-xs font-semibold text-zen-muted uppercase tracking-wider mb-1.5">
-              Category
-            </label>
-            <div className="flex flex-wrap gap-1.5">
-              {CATEGORIES.map(cat => (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => setCategory(cat)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-                    category === cat
-                      ? 'bg-zen-forest text-white shadow-sm'
-                      : 'bg-zen-card text-zen-muted hover:text-zen-text'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
+            <div className="grid grid-cols-6 gap-1.5">
+              {WEEKLY_GOAL_OPTIONS.map(hours => {
+                const isSelected = selectedWeeklyHours === hours;
+                return (
+                  <button
+                    key={hours}
+                    type="button"
+                    onClick={() => setSelectedWeeklyHours(hours)}
+                    style={{
+                      backgroundColor: isSelected ? selectedColor : 'var(--zen-surface-subtle)',
+                      color: isSelected ? '#FFFFFF' : 'var(--zen-text-primary)',
+                    }}
+                    className={`py-2 rounded-lg text-xs font-semibold transition-all ${
+                      isSelected ? 'shadow-xs font-bold' : 'hover:bg-zen-border'
+                    }`}
+                  >
+                    {hours}h
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Color Tag */}
+          {/* Soothing Colors Swatches */}
           <div>
-            <label className="block text-xs font-semibold text-zen-muted uppercase tracking-wider mb-1.5">
-              Accent Color
+            <label className="block text-[11px] font-semibold text-zen-text-secondary uppercase tracking-wider mb-2">
+              Select Color
             </label>
-            <div className="flex items-center space-x-2">
-              {COLORS.map(c => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setSelectedColor(c)}
-                  className={`w-7 h-7 rounded-full transition-transform ${
-                    selectedColor === c ? 'scale-110 ring-2 ring-offset-2 ring-zen-forest' : 'hover:scale-105'
-                  }`}
-                  style={{ backgroundColor: c }}
-                />
-              ))}
+            <div className="flex items-center justify-between">
+              {SOOTHING_COLORS.map(c => {
+                const isSelected = selectedColor === c.hex;
+                return (
+                  <button
+                    key={c.hex}
+                    type="button"
+                    onClick={() => setSelectedColor(c.hex)}
+                    style={{ backgroundColor: c.hex }}
+                    className={`w-8 h-8 rounded-full transition-transform duration-150 ${
+                      isSelected
+                        ? 'ring-3 ring-offset-2 ring-zen-text-primary scale-110'
+                        : 'hover:scale-105 opacity-90'
+                    }`}
+                    title={c.name}
+                  />
+                );
+              })}
             </div>
           </div>
 
-          {/* Submit Button */}
-          <div className="pt-2">
+          {/* Actions */}
+          <div className="flex items-center space-x-2 pt-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-2.5 rounded-xl border border-zen-border text-xs font-semibold text-zen-text-secondary hover:bg-zen-surface-subtle transition-colors"
+            >
+              Cancel
+            </button>
             <button
               type="submit"
-              className="w-full py-3 rounded-2xl bg-zen-forest text-white font-semibold text-sm shadow-sm hover:opacity-95 transition-opacity"
+              disabled={!name.trim()}
+              style={{ backgroundColor: selectedColor }}
+              className="flex-1 py-2.5 rounded-xl text-white text-xs font-bold shadow-xs hover:opacity-95 disabled:opacity-40 transition-opacity"
             >
-              Create Timer
+              Add Subject
             </button>
           </div>
         </form>

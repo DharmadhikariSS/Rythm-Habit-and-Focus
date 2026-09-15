@@ -4,29 +4,27 @@
 
 @layer base {
   :root {
-    --zen-bg: #FBFBFA;
+    --zen-bg: #F7FAF7;
     --zen-surface: #FFFFFF;
-    --zen-card: #F4F6F3;
-    --zen-border: #E5E9E4;
-    --zen-forest: #2D5A43;
-    --zen-accent: #52B788;
-    --zen-text: #1C251F;
-    --zen-muted: #627467;
-    --zen-subtle: #94A398;
-    --zen-highlight: #EBF5F0;
+    --zen-surface-subtle: #EFF3EF;
+    --zen-border: #E2EAE2;
+    --zen-border-selected: #4A7C59;
+    --zen-text-primary: #1B261F;
+    --zen-text-secondary: #5B6E61;
+    --zen-text-tertiary: #8C9E91;
+    --zen-heatmap-0: #EAEFEA;
   }
 
   .dark {
     --zen-bg: #131814;
     --zen-surface: #1A221C;
-    --zen-card: #222C25;
-    --zen-border: #29372D;
-    --zen-forest: #52B788;
-    --zen-accent: #74C69D;
-    --zen-text: #E8EFE9;
-    --zen-muted: #95A698;
-    --zen-subtle: #5A6D5F;
-    --zen-highlight: #1C3325;
+    --zen-surface-subtle: #232D25;
+    --zen-border: #2D3B30;
+    --zen-border-selected: #57915B;
+    --zen-text-primary: #E8EFE9;
+    --zen-text-secondary: #A5B6A8;
+    --zen-text-tertiary: #6B7E6F;
+    --zen-heatmap-0: #232D25;
   }
 
   * {
@@ -38,7 +36,7 @@
     margin: 0;
     padding: 0;
     background-color: var(--zen-bg);
-    color: var(--zen-text);
+    color: var(--zen-text-primary);
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     min-height: 100%;
     min-height: -webkit-fill-available;
@@ -47,7 +45,6 @@
   }
 }
 
-/* Safe area padding utilities for modern iPhone & Android devices */
 .safe-top {
   padding-top: env(safe-area-inset-top, 0px);
 }
@@ -56,10 +53,10 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* Smooth custom scrollbars */
+/* Custom scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -67,10 +64,10 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(82, 183, 136, 0.2);
+  background: rgba(67, 122, 85, 0.2);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(82, 183, 136, 0.4);
+  background: rgba(67, 122, 85, 0.4);
 }

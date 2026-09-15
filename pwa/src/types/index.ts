@@ -1,46 +1,58 @@
-export type TimerStatus = 'idle' | 'running' | 'paused' | 'completed';
+export type HabitType = 'CHECK' | 'TIMED' | 'COUNTER';
 
-export interface Timer {
+export interface Subject {
   id: string;
-  title: string;
-  totalSeconds: number;
-  remainingSeconds: number;
-  status: TimerStatus;
-  category: string;
-  color: string;
-  createdAt: number;
+  name: string;
+  color: string; // hex
+  targetWeeklyHours: number;
+  totalElapsedMs: number;
+  isRunning: boolean;
 }
-
-export type HabitType = 'check' | 'duration';
 
 export interface Habit {
   id: string;
-  title: string;
+  name: string;
+  icon: string; // emoji e.g. "🌿"
   type: HabitType;
-  targetDurationMinutes: number;
-  frequency: string; // e.g. "Daily"
   color: string;
-  streakCurrent: number;
-  streakBest: number;
+  targetDurationMinutes: number;
+  targetCount: number;
+  targetUnit: string;
+  streakDays: number;
+  bestStreak: number;
   createdAt: number;
 }
 
-export interface HabitLog {
+export interface HabitEntry {
   id: string;
   habitId: string;
-  date: string; // YYYY-MM-DD
-  completed: boolean;
-  durationMinutes: number;
+  dateIso: string; // YYYY-MM-DD
+  isCompleted: boolean;
+  loggedDurationSeconds: number;
+  currentCount: number;
+  isRestDay: boolean;
 }
 
-export interface SessionRecord {
+export interface StudySession {
   id: string;
-  timerTitle: string;
-  durationMinutes: number;
+  subjectId: string;
+  subjectName: string;
+  durationSeconds: number;
   completedAt: number;
-  category: string;
-  date: string; // YYYY-MM-DD
+  subjectColor: string;
+  dateIso: string; // YYYY-MM-DD
 }
+
+export interface HeatmapDayData {
+  dateIso: string;
+  dayNumber: number;
+  dayOfWeek: string;
+  completionRatio: number; // 0.0 to 1.0
+  isToday: boolean;
+}
+
+export type AnalyticsLens = 'SUBJECTS' | 'HABITS';
+export type Timeframe = 'TODAY' | 'WEEK' | 'MONTH' | 'ALL';
 
 export type InsightCategory = 
   | 'PEAK_PERFORMANCE' 
@@ -58,12 +70,4 @@ export interface BehavioralInsight {
 }
 
 export type ThemeMode = 'light' | 'dark' | 'system';
-
 export type NavTab = 'timers' | 'habits' | 'analytics';
-
-export interface TimeDistribution {
-  morning: number;   // 05:00 - 12:00
-  afternoon: number; // 12:00 - 17:00
-  evening: number;   // 17:00 - 22:00
-  night: number;     // 22:00 - 05:00
-}
