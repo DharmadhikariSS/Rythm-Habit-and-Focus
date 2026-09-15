@@ -32,3 +32,10 @@ captures/
 *.jks
 *.keystore
 
+# PWA / Web dependencies and builds
+**/node_modules/
+**/dist/
+pwa/node_modules/
+pwa/dist/
+.npm/
+

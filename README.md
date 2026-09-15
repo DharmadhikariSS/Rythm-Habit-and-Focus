@@ -19,9 +19,26 @@
 
 ## 📱 About Rhythm
 
-**Rhythm: Habit & Focus** helps you stay in flow, achieve deep work sessions, and cultivate consistent habits. Built natively with modern Android standards using **Jetpack Compose** and **Material 3**, Rhythm combines a versatile multi-timer engine with comprehensive habit tracking and visual analytics.
+**Rhythm: Habit & Focus** helps you stay in flow, achieve deep work sessions, and cultivate consistent habits. Available as both a native Android app (Kotlin & Jetpack Compose) and an ultra-lightweight, zero-cost **Progressive Web App (PWA)** built with **React 19, TypeScript, Vite, and Tailwind CSS**.
 
-Whether you are preparing for exams, managing work sprints, or tracking daily routines, Rhythm keeps you accountable and focused.
+Whether on your Android phone, iOS device (iPhone/iPad), or laptop, Rhythm keeps you accountable, mindful, and focused across all devices.
+
+---
+
+## 🌐 Progressive Web App (PWA)
+
+The web edition is located in `/pwa`:
+- **Zero-cost & 100% Offline-capable**: Persists locally via LocalStorage & IndexedDB.
+- **Cross-Platform**: Installable to iOS home screens (via Safari) and Android (via Chrome) as a standalone native-feeling app.
+- **Synthesized Audio**: Serene Tibetan singing bowl harmonic chime generated via Web Audio API.
+- **Fast & Lightweight**: Sub-second builds with Vite, bundle < 150KB gzipped.
+
+```bash
+# Run PWA locally
+cd pwa
+npm install
+npm run dev
+```
 
 ---
 
