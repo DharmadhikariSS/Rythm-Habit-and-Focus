@@ -1,6 +1,6 @@
 # Rhythm (Habit & Focus) - Shared Antigravity Brain
 
-Welcome to **Rhythm**, a mindful, zero-distraction productivity and habit-tracking Progressive Web App (PWA) and mobile ecosystem.
+Welcome to **Rhythm**, a mindful, zero-distraction productivity and habit-tracking Progressive Web App (PWA) and collaborative ecosystem.
 
 This document is the **Single Source of Truth** for both developers and their **Antigravity AI agents**. When working on this repository, all agents must strictly adhere to the following architecture, design guidelines, and code conventions.
 
@@ -10,64 +10,77 @@ This document is the **Single Source of Truth** for both developers and their **
 
 Rhythm is designed to promote calm, focus, and intentionality. Never use loud, aggressive, or chaotic UI patterns.
 
-### Color Tokens
+### Exact Nordic Zen Palette (Color.kt parity)
 - **Background**:
-  - Light: `#FBFBFA` (Soft warm paper)
+  - Light: `#F7FAF7`
   - Dark: `#131814` (Deep Nordic forest night)
 - **Surfaces & Cards**:
-  - Light: `#FFFFFF` (Pure clean surface with subtle border)
-  - Dark: `#1A221C` (Muted dark moss card)
-- **Primary / Brand Forest**:
-  - Primary: `#2D5A43` (Nordic pine green)
-  - Accent / Vibrant: `#52B788` (Sage leaf highlight)
-- **Text & Contrast**:
-  - Light mode text: `#1C251F` (Primary), `#526055` (Muted), `#8A988D` (Subtle)
-  - Dark mode text: `#E8EFE9` (Primary), `#A4B3A7` (Muted), `#5C6E61` (Subtle)
-- **Borders & Dividers**:
-  - Light: `#EAECE8`
-  - Dark: `#253128`
-
-### UI Conventions
-- **Rounded Corners**: Generous `rounded-2xl` and `rounded-3xl` for cards, dialogs, and buttons.
-- **Typography**: Clean, geometric sans-serif (Inter / System UI). Bold, clear numbers for timer displays.
-- **Motion & Feedback**: Subtle, organic transitions (200-300ms ease-out). No jarring popups.
-- **Sound**: Serene Tibetan singing bowl harmonic chime generated on-device via Web Audio API.
+  - Light: `#FFFFFF`
+  - Dark: `#1A221C`
+- **Primary / Brand Accents (8 Soothing Hex Tones)**:
+  - `Emerald`: `#437A55`
+  - `Ocean`: `#386B80`
+  - `Terracotta`: `#B55D46`
+  - `Lavender`: `#6B5F8C`
+  - `Ochre`: `#A67B34`
+  - `Rose`: `#9E4E68`
+  - `Sky`: `#3A7D99`
+  - `Sage`: `#5D8464`
+- **Heatmap Tiers**:
+  - Level 0: `#EAECE8` (Light) / `#253128` (Dark)
+  - Level 1: `#85B595`
+  - Level 2: `#5A996D`
+  - Level 3: `#437A55`
+  - Level 4: `#2D5A3D`
 
 ---
 
-## 🛠️ Tech Stack & Directory Structure
+## 🛠️ Tech Stack & Directory Structure (Rhythm v2.0)
 
 ```text
 StudyTimerApp/
-├── GEMINI.md               # This project rulebook for Antigravity agents
-├── pwa/                    # Progressive Web App (Vite + React 19 + TypeScript + Tailwind)
+├── GEMINI.md                     # Single Source of Truth for Antigravity agents
+├── pwa/                          # Progressive Web App
 │   ├── src/
-│   │   ├── types/          # Shared data contracts
-│   │   ├── services/       # Storage (LocalStorage/IndexedDB), Sound, AI Engine
-│   │   ├── context/        # AppData and Theme state
-│   │   ├── components/     # Reusable UI widgets
-│   │   └── screens/        # HomeScreen, HabitScreen, AnalyticsScreen
-│   └── public/             # PWA assets & icons
-└── app/                    # Native Android Kotlin App (v1.5.0 baseline)
+│   │   ├── types/                # Domain models (Collab, Diary, Pomodoro, Badges)
+│   │   ├── store/                # Zustand central reactive store (useRhythmStore)
+│   │   ├── services/             # Dexie DB, Web Crypto, Milestone Engine, Sound
+│   │   ├── data/                 # 12 Goal Packs & 28 Badge Definitions
+│   │   ├── context/              # ThemeContext (Light / Dark)
+│   │   ├── components/           # Reusable widgets (Sidebar, Navbar, TimerCard, Heatmaps)
+│   │   └── screens/              # HomeScreen, HabitScreen, AnalyticsScreen, CollabScreen, DiaryScreen, OnboardingScreen
+│   └── public/                   # PWA manifest & assets
 ```
 
 ---
 
-## 📐 Data Contracts & Models
+## 📐 Core Architecture Principles
 
-All data must adhere to these core TypeScript types in `pwa/src/types/index.ts`:
+1. **Local-First with Dexie.js (IndexedDB)**:
+   All entities (`subjects`, `habits`, `habitEntries`, `sessions`, `badges`, `collabSpaces`, `diaryEntries`) write immediately to client IndexedDB for instant UI responsiveness and 100% offline capability.
 
-1. **`Timer`**: `id`, `title`, `totalSeconds`, `remainingSeconds`, `status` (`'idle' | 'running' | 'paused' | 'completed'`), `category`, `color`, `createdAt`.
-2. **`Habit`**: `id`, `title`, `type` (`'check' | 'duration'`), `targetMinutes`, `frequency`, `color`, `streakCurrent`, `streakBest`, `createdAt`.
-3. **`HabitLog`**: `id`, `habitId`, `date` (`YYYY-MM-DD`), `completed`, `durationMinutes`.
-4. **`SessionRecord`**: `id`, `timerTitle`, `durationMinutes`, `completedAt`, `category`, `date`.
-5. **`BehavioralInsight`**: `category`, `confidence`, `headline`, `analysis`, `actionableTip`.
+2. **Personal Encrypted Diary (Zero-Knowledge Privacy)**:
+   - Diary payloads are encrypted **client-side** using the browser's native **Web Crypto API (`window.crypto.subtle`)**.
+   - Key derivation: PBKDF2 with SHA-256 and 100,000 iterations using user's private PIN and random salt.
+   - Cipher: AES-GCM (256-bit key, unique 96-bit IV per entry).
+   - Only ciphertext is persisted to storage. Even backend/database admins cannot read diary reflections.
+
+3. **Multi-User Collaboration Mode**:
+   - Private personal goals remain strictly separated by `userId`.
+   - Shared spaces allow collaborative goals with progress logging, notes, buzz nudges, and daily praises.
+   - Dual leaderboards: Collaborative (team points) + Personal Records (private bests).
+
+4. **Dynamic AI Engine (`gemini-2.0-flash`)**:
+   - Insights are not static templates. Context is dynamically assembled from active goal packs, circadian chronotype peaks, habit streak trajectories, and weakest habits.
+   - Local heuristics serve as instant fallback when offline.
+
+5. **Gamification & Milestone Engine**:
+   - Comprehensive taxonomy covering Streaks, Productivity Multipliers (200%-400%), Milestones (100 to 4,000+), Category Records, Accountability Battles, and Limited Seasonal Badges.
 
 ---
 
 ## 🧪 Development & Quality Standards
 
-1. **Zero External API Costs**: All behavioral intelligence calculations and sound synthesis run 100% locally on-device.
-2. **Zero Build Warnings**: Run `npm run build` inside `StudyTimerApp/pwa` before committing changes. Ensure strict TypeScript types with no `any` abuse.
-3. **PWA Offline Support**: Ensure the service worker caches all static assets so the app works seamlessly without an internet connection.
-4. **Mobile Responsive**: Test and ensure pixel-perfect rendering on mobile screens (375px - 430px) with iOS Safari safe-area insets respected.
+1. **Zero Build Warnings**: Run `npm run build` inside `StudyTimerApp/pwa` before committing. Ensure strict TypeScript types with no `any` abuse.
+2. **Desktop & Mobile Responsive**: Support 375px mobile viewports (bottom navbar) through 1440px desktop screens (280px left sidebar + 2-column card layouts).
+3. **Sound**: Harmonious singing bowl harmonic generated via Web Audio API.

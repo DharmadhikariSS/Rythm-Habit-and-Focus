@@ -1,10 +1,12 @@
 import React from 'react';
 import { Download, Clock, Calendar, Flame, Sunrise, Sun, Sunset, Moon, Sparkles } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useRhythmStore } from '../store/useRhythmStore';
 import { DonutChart, DonutSliceData } from '../components/DonutChart';
 import { SegmentedProgressBar } from '../components/SegmentedProgressBar';
 import { AiSpotlightCard } from '../components/AiSpotlightCard';
 import { AnalyticsLens, Timeframe } from '../types';
+import { ALL_BADGES } from '../data/badges';
+import { storage } from '../services/storage';
 
 export const AnalyticsScreen: React.FC = () => {
   const {
@@ -17,9 +19,12 @@ export const AnalyticsScreen: React.FC = () => {
     timeframe,
     setTimeframe,
     insight,
-    exportData,
+    refreshAiInsight,
+    badges,
     todayDate,
-  } = useApp();
+  } = useRhythmStore();
+
+  const exportData = () => storage.exportCSV(habits, habitEntries, subjects, sessions);
 
   // Filter sessions by timeframe
   const filteredSessions = sessions.filter(s => {
@@ -95,7 +100,7 @@ export const AnalyticsScreen: React.FC = () => {
   }).sort((a, b) => b.rate - a.rate);
 
   return (
-    <div className="pb-24 pt-3 px-4 max-w-md mx-auto space-y-4">
+    <div className="pb-24 pt-4 px-4 max-w-5xl mx-auto space-y-6">
       {/* Top Bar with Export CSV */}
       <div className="flex items-center justify-between px-1">
         <div>
@@ -402,7 +407,77 @@ export const AnalyticsScreen: React.FC = () => {
       )}
 
       {/* 3. Dynamic On-Device AI Behavioral Intelligence Spotlight */}
-      <AiSpotlightCard insight={insight} />
+      <div className="space-y-2">
+        <div className="flex items-center justify-between px-1">
+          <span className="text-[11px] font-bold text-zen-muted uppercase tracking-wider">
+            Gemini 2.0 Flash Dynamic Intelligence
+          </span>
+          <button
+            onClick={refreshAiInsight}
+            className="text-xs font-bold text-accent-emerald flex items-center space-x-1 hover:underline"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Regenerate Insight</span>
+          </button>
+        </div>
+        <AiSpotlightCard insight={insight} />
+      </div>
+
+      {/* 4. Milestones & Achievement Badges Hall */}
+      <div className="p-5 rounded-3xl bg-zen-surface border border-zen-border shadow-sm space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <span className="text-xl">🏆</span>
+            <div>
+              <h3 className="text-sm font-bold text-zen-text tracking-tight">
+                Achievement & Milestones Hall
+              </h3>
+              <span className="text-[10px] text-zen-muted font-medium">
+                {badges.length} of {ALL_BADGES.length} Badges Unlocked
+              </span>
+            </div>
+          </div>
+          <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-accent-ochre/15 text-accent-ochre">
+            Lifetime Honors
+          </span>
+        </div>
+
+        {/* Badge Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          {ALL_BADGES.map((b) => {
+            const isUnlocked = badges.some((record) => record.badgeId === b.id);
+            return (
+              <div
+                key={b.id}
+                className={`p-3.5 rounded-2xl border transition-all flex flex-col items-center text-center justify-between ${
+                  isUnlocked
+                    ? 'bg-zen-card border-accent-ochre/40 shadow-xs'
+                    : 'bg-zen-surface/40 border-zen-border/40 opacity-45'
+                }`}
+              >
+                <div className="text-2xl mb-1.5">{b.icon}</div>
+                <div>
+                  <h4 className="text-xs font-bold text-zen-text leading-snug truncate w-full">
+                    {b.title}
+                  </h4>
+                  <p className="text-[10px] text-zen-muted leading-tight mt-1 line-clamp-2">
+                    {b.description}
+                  </p>
+                </div>
+                <span
+                  className={`mt-2 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                    isUnlocked
+                      ? 'bg-accent-emerald/15 text-accent-emerald'
+                      : 'bg-zen-border text-zen-muted'
+                  }`}
+                >
+                  {isUnlocked ? 'Unlocked' : 'Locked'}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Calendar, RotateCcw } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useRhythmStore } from '../store/useRhythmStore';
 import { MonthlyOverviewCard } from '../components/MonthlyOverviewCard';
 import { HabitCard } from '../components/HabitCard';
 import { AddHabitModal } from '../components/AddHabitModal';
@@ -13,7 +13,7 @@ const STARTER_HABITS = [
 ];
 
 export const HabitScreen: React.FC = () => {
-  const { habits, selectedDate, setSelectedDate, todayDate, addHabit } = useApp();
+  const { habits, selectedDate, setSelectedDate, todayDate, addHabit } = useRhythmStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const isSelectedToday = selectedDate === todayDate;
@@ -24,14 +24,14 @@ export const HabitScreen: React.FC = () => {
   });
 
   return (
-    <div className="pb-24 pt-3 px-4 max-w-md mx-auto space-y-4">
+    <div className="pb-24 pt-4 px-4 max-w-5xl mx-auto space-y-6">
       {/* 1. Monthly Overview Hero Card */}
       <MonthlyOverviewCard />
 
       {/* 2. Selected Date Header & Return to Today Button */}
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center space-x-1.5">
-          <Calendar className="w-3.5 h-3.5 text-accent-emerald" />
+          <Calendar className="w-4 h-4 text-accent-emerald" />
           <h3 className="text-xs font-bold uppercase tracking-wider text-zen-text-secondary">
             {isSelectedToday ? "TODAY'S HABITS" : `HABITS FOR ${formattedSelectedDate}`}
           </h3>
@@ -42,15 +42,15 @@ export const HabitScreen: React.FC = () => {
             onClick={() => setSelectedDate(todayDate)}
             className="text-xs font-bold text-accent-emerald flex items-center space-x-1 hover:underline"
           >
-            <RotateCcw className="w-3 h-3" />
+            <RotateCcw className="w-3.5 h-3.5" />
             <span>Jump to Today</span>
           </button>
         )}
       </div>
 
-      {/* 3. Habits List */}
-      <div className="space-y-2.5">
-        {habits.map(habit => (
+      {/* 3. Habits List in Responsive 2-Column Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {habits.map((habit) => (
           <HabitCard
             key={habit.id}
             habit={habit}
@@ -59,7 +59,7 @@ export const HabitScreen: React.FC = () => {
         ))}
 
         {habits.length === 0 && (
-          <div className="p-8 rounded-3xl bg-zen-surface border border-dashed border-zen-border text-center flex flex-col items-center justify-center">
+          <div className="col-span-full p-8 rounded-3xl bg-zen-surface border border-dashed border-zen-border text-center flex flex-col items-center justify-center">
             <span className="text-3xl mb-2">🌿</span>
             <h4 className="text-sm font-bold text-zen-text-primary mb-1">No habits tracked yet</h4>
             <p className="text-xs text-zen-text-secondary mb-4 max-w-xs">
@@ -67,7 +67,7 @@ export const HabitScreen: React.FC = () => {
             </p>
 
             <div className="flex flex-wrap justify-center gap-2 max-w-xs">
-              {STARTER_HABITS.map(h => (
+              {STARTER_HABITS.map((h) => (
                 <button
                   key={h.name}
                   onClick={() => addHabit(h)}
@@ -82,10 +82,10 @@ export const HabitScreen: React.FC = () => {
         )}
       </div>
 
-      {/* Floating Action Button (FAB) matching Android */}
+      {/* Floating Action Button (FAB) on mobile */}
       <button
         onClick={() => setIsModalOpen(true)}
-        className="fixed right-5 bottom-20 z-20 w-12 h-12 rounded-2xl bg-accent-emerald text-white flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all"
+        className="lg:hidden fixed right-5 bottom-20 z-20 w-12 h-12 rounded-2xl bg-accent-emerald text-white flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all"
         title="Add new habit"
       >
         <Plus className="w-6 h-6" />

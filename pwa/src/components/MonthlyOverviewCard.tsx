@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useRhythmStore } from '../store/useRhythmStore';
 import { CompleteMonthCalendarView } from './CompleteMonthCalendarView';
 import { ActivityHeatmapStrip } from './ActivityHeatmapStrip';
 import { SegmentedProgressBar } from './SegmentedProgressBar';
 import { HeatmapDayData } from '../types';
 
 export const MonthlyOverviewCard: React.FC = () => {
-  const { selectedDate, setSelectedDate, habits, habitEntries, todayDate } = useApp();
+  const { selectedDate, setSelectedDate, habits, habitEntries, todayDate } = useRhythmStore();
   const [isCalendarExpanded, setIsCalendarExpanded] = useState(false);
   const [viewMonthOffset, setViewMonthOffset] = useState(0);
 

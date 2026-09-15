@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Check, Flame, Play, Pause, RotateCcw, Plus, Minus, MoreVertical, Coffee, Trash2 } from 'lucide-react';
 import { Habit, HabitEntry } from '../types';
-import { useApp } from '../context/AppContext';
+import { useRhythmStore } from '../store/useRhythmStore';
 
 interface HabitCardProps {
   habit: Habit;
@@ -19,7 +19,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, selectedDateIso }) 
     resetHabitTimer,
     activeHabitTimers,
     deleteHabit,
-  } = useApp();
+  } = useRhythmStore();
 
   const [showMenu, setShowMenu] = useState(false);
 

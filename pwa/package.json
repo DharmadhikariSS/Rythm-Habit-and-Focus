@@ -22,8 +22,10 @@
   },
   "dependencies": {
     "canvas-confetti": "^1.9.4",
+    "dexie": "^4.4.6",
     "lucide-react": "^1.46.0",
     "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "react-dom": "^19.3.0",
+    "zustand": "^5.0.15"
   }
 }

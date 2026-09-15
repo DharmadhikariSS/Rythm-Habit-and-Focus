@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, CheckSquare, Clock, Hash } from 'lucide-react';
 import { HabitType } from '../types';
-import { useApp } from '../context/AppContext';
+import { useRhythmStore } from '../store/useRhythmStore';
 
 interface AddHabitModalProps {
   isOpen: boolean;
@@ -22,7 +22,7 @@ const SOOTHING_COLORS = [
 ];
 
 export const AddHabitModal: React.FC<AddHabitModalProps> = ({ isOpen, onClose }) => {
-  const { addHabit } = useApp();
+  const { addHabit } = useRhythmStore();
 
   const [name, setName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState('🌿');

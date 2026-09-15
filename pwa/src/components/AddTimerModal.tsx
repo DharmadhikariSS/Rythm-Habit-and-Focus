@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useRhythmStore } from '../store/useRhythmStore';
 
 interface AddTimerModalProps {
   isOpen: boolean;
@@ -21,7 +21,7 @@ const SOOTHING_COLORS = [
 const WEEKLY_GOAL_OPTIONS = [3, 5, 8, 10, 15, 20];
 
 export const AddTimerModal: React.FC<AddTimerModalProps> = ({ isOpen, onClose }) => {
-  const { addSubject } = useApp();
+  const { addSubject } = useRhythmStore();
 
   const [name, setName] = useState('');
   const [selectedWeeklyHours, setSelectedWeeklyHours] = useState(5);

@@ -1,0 +1,208 @@
+import { GoalPack } from '../types';
+
+export const GOAL_PACKS: GoalPack[] = [
+  {
+    id: 'exam_warrior',
+    title: 'Exam Warrior',
+    tagline: 'High-stakes test prep and deep concept revision',
+    icon: '📚',
+    accentColor: '#386B80',
+    habits: [
+      { name: 'Daily Revision Block', icon: '📝', type: 'CHECK', category: 'study', color: '#437A55' },
+      { name: 'Practice Mock Tests', icon: '🎯', type: 'CHECK', category: 'study', color: '#386B80' },
+      { name: 'Sleep by 11:00 PM', icon: '🌙', type: 'CHECK', category: 'wellness', color: '#6B5F8C' },
+      { name: 'Morning Focus Block', icon: '🌅', type: 'CHECK', category: 'study', color: '#A67B34' },
+    ],
+    subjects: [
+      { name: 'Mathematics', color: '#386B80', targetWeeklyHours: 6 },
+      { name: 'Physics', color: '#B55D46', targetWeeklyHours: 6 },
+      { name: 'Chemistry', color: '#437A55', targetWeeklyHours: 5 },
+    ],
+  },
+  {
+    id: 'fitness_first',
+    title: 'Fitness First',
+    tagline: 'Physical vitality, hydration, and active recovery',
+    icon: '💪',
+    accentColor: '#B55D46',
+    habits: [
+      { name: 'Morning Workout', icon: '🏋️', type: 'CHECK', category: 'fitness', color: '#B55D46' },
+      { name: 'Hydrate 2L', icon: '💧', type: 'COUNTER', category: 'wellness', targetCount: 8, targetUnit: 'glasses', color: '#3A7D99' },
+      { name: 'Sleep 8 Hours', icon: '🛌', type: 'CHECK', category: 'wellness', color: '#6B5F8C' },
+      { name: 'Evening Walk', icon: '🚶', type: 'CHECK', category: 'fitness', color: '#437A55' },
+    ],
+    subjects: [
+      { name: 'Fitness & Conditioning', color: '#B55D46', targetWeeklyHours: 5 },
+      { name: 'Nutrition Science', color: '#5D8464', targetWeeklyHours: 3 },
+    ],
+  },
+  {
+    id: 'mental_wellness',
+    title: 'Mental Wellness',
+    tagline: 'Mindfulness, emotional clarity, and screen detox',
+    icon: '🧘',
+    accentColor: '#437A55',
+    habits: [
+      { name: 'Daily Meditation', icon: '🧘', type: 'TIMED', category: 'mindfulness', targetDurationMinutes: 10, color: '#437A55' },
+      { name: 'Gratitude Reflection', icon: '🌿', type: 'CHECK', category: 'mindfulness', color: '#A67B34' },
+      { name: 'Zero Screens Before Bed', icon: '📴', type: 'CHECK', category: 'wellness', color: '#6B5F8C' },
+      { name: 'Mindful Breathing', icon: '🌬️', type: 'TIMED', category: 'mindfulness', targetDurationMinutes: 5, color: '#386B80' },
+    ],
+    subjects: [
+      { name: 'Mindfulness & Meditation', color: '#437A55', targetWeeklyHours: 3 },
+      { name: 'Self-Care & Psychology', color: '#6B5F8C', targetWeeklyHours: 3 },
+    ],
+  },
+  {
+    id: 'deep_work',
+    title: 'Deep Work Mastery',
+    tagline: 'Cal Newport-style distraction-free focus blocks',
+    icon: '🎯',
+    accentColor: '#386B80',
+    habits: [
+      { name: '3 Pomodoro Sessions', icon: '🍅', type: 'COUNTER', category: 'productivity', targetCount: 3, targetUnit: 'blocks', color: '#B55D46' },
+      { name: 'No Social Media Morning', icon: '🚫', type: 'CHECK', category: 'productivity', color: '#A67B34' },
+      { name: 'Shutdown Ritual & Plan', icon: '📋', type: 'CHECK', category: 'productivity', color: '#386B80' },
+      { name: 'Read 30 Minutes', icon: '📖', type: 'TIMED', category: 'productivity', targetDurationMinutes: 30, color: '#5D8464' },
+    ],
+    subjects: [
+      { name: 'Deep Work Project', color: '#386B80', targetWeeklyHours: 10 },
+      { name: 'Knowledge Craft', color: '#A67B34', targetWeeklyHours: 5 },
+    ],
+  },
+  {
+    id: 'career_builder',
+    title: 'Career Builder',
+    tagline: 'Technical upskilling, DSA, and career momentum',
+    icon: '💼',
+    accentColor: '#386B80',
+    habits: [
+      { name: 'LeetCode / Problem Solving', icon: '💻', type: 'CHECK', category: 'study', color: '#386B80' },
+      { name: 'Professional Networking', icon: '🤝', type: 'CHECK', category: 'productivity', color: '#6B5F8C' },
+      { name: 'Skill Deep Dive', icon: '⚡', type: 'TIMED', category: 'study', targetDurationMinutes: 45, color: '#437A55' },
+      { name: 'Industry Reading', icon: '📰', type: 'CHECK', category: 'study', color: '#A67B34' },
+    ],
+    subjects: [
+      { name: 'Algorithms & Coding', color: '#386B80', targetWeeklyHours: 8 },
+      { name: 'System Architecture', color: '#B55D46', targetWeeklyHours: 6 },
+    ],
+  },
+  {
+    id: 'creative_flow',
+    title: 'Creative Flow',
+    tagline: 'Design, writing, and daily creative output',
+    icon: '🎨',
+    accentColor: '#9E4E68',
+    habits: [
+      { name: 'Daily Design / Sketch', icon: '🎨', type: 'TIMED', category: 'productivity', targetDurationMinutes: 25, color: '#9E4E68' },
+      { name: 'Read Great Fiction', icon: '📚', type: 'TIMED', category: 'mindfulness', targetDurationMinutes: 30, color: '#A67B34' },
+      { name: 'Curate Inspiration', icon: '✨', type: 'CHECK', category: 'productivity', color: '#5D8464' },
+      { name: 'Daily Creative Artifact', icon: '💡', type: 'CHECK', category: 'productivity', color: '#B55D46' },
+    ],
+    subjects: [
+      { name: 'Visual & UI Design', color: '#9E4E68', targetWeeklyHours: 6 },
+      { name: 'Creative Writing', color: '#A67B34', targetWeeklyHours: 4 },
+    ],
+  },
+  {
+    id: 'financial_clarity',
+    title: 'Financial Clarity',
+    tagline: 'Expense awareness, zero impulse buys, and investing',
+    icon: '💰',
+    accentColor: '#A67B34',
+    habits: [
+      { name: 'Log Every Expense', icon: '💳', type: 'CHECK', category: 'finance', color: '#A67B34' },
+      { name: 'Zero Impulse Purchases', icon: '🛡️', type: 'CHECK', category: 'finance', color: '#437A55' },
+      { name: 'Market & Macro Review', icon: '📈', type: 'CHECK', category: 'finance', color: '#386B80' },
+      { name: 'Weekly Budget Check', icon: '📊', type: 'CHECK', category: 'finance', color: '#6B5F8C' },
+    ],
+    subjects: [
+      { name: 'Investment Analysis', color: '#A67B34', targetWeeklyHours: 4 },
+      { name: 'Macroeconomics', color: '#386B80', targetWeeklyHours: 4 },
+    ],
+  },
+  {
+    id: 'healthy_living',
+    title: 'Healthy Living',
+    tagline: 'Nutritious cooking, movement, and vital energy',
+    icon: '🌿',
+    accentColor: '#437A55',
+    habits: [
+      { name: 'Drink 8 Glasses Water', icon: '💧', type: 'COUNTER', category: 'wellness', targetCount: 8, targetUnit: 'glasses', color: '#3A7D99' },
+      { name: '30-Minute Brisk Walk', icon: '👟', type: 'TIMED', category: 'fitness', targetDurationMinutes: 30, color: '#437A55' },
+      { name: 'Cook Whole Foods', icon: '🥗', type: 'CHECK', category: 'wellness', color: '#5D8464' },
+      { name: 'Zero Processed Snacks', icon: '🍎', type: 'CHECK', category: 'wellness', color: '#B55D46' },
+    ],
+    subjects: [
+      { name: 'Healthy Cooking & Nutrition', color: '#5D8464', targetWeeklyHours: 3 },
+      { name: 'Yoga & Functional Mobility', color: '#437A55', targetWeeklyHours: 4 },
+    ],
+  },
+  {
+    id: 'language_mastery',
+    title: 'Language Mastery',
+    tagline: 'Active vocabulary retention, listening, and speaking',
+    icon: '🗣️',
+    accentColor: '#386B80',
+    habits: [
+      { name: '10 Flashcards Drill', icon: '📇', type: 'COUNTER', category: 'study', targetCount: 10, targetUnit: 'cards', color: '#A67B34' },
+      { name: 'Target Language Audio', icon: '🎧', type: 'TIMED', category: 'study', targetDurationMinutes: 20, color: '#386B80' },
+      { name: 'Grammar Practice', icon: '✍️', type: 'CHECK', category: 'study', color: '#6B5F8C' },
+    ],
+    subjects: [
+      { name: 'Language Immersion', color: '#386B80', targetWeeklyHours: 5 },
+      { name: 'Grammar Foundations', color: '#6B5F8C', targetWeeklyHours: 3 },
+    ],
+  },
+  {
+    id: 'startup_grind',
+    title: 'Startup Grind',
+    tagline: 'Shipping code, talking to users, and product velocity',
+    icon: '🚀',
+    accentColor: '#386B80',
+    habits: [
+      { name: 'Ship Code / Feature', icon: '💻', type: 'TIMED', category: 'productivity', targetDurationMinutes: 90, color: '#386B80' },
+      { name: '3 Customer Outreaches', icon: '📞', type: 'COUNTER', category: 'productivity', targetCount: 3, targetUnit: 'chats', color: '#B55D46' },
+      { name: 'Analyze Daily Metrics', icon: '📉', type: 'CHECK', category: 'productivity', color: '#A67B34' },
+      { name: 'Nightly Retrospective', icon: '🌙', type: 'CHECK', category: 'productivity', color: '#437A55' },
+    ],
+    subjects: [
+      { name: 'Core Product Engineering', color: '#386B80', targetWeeklyHours: 12 },
+      { name: 'Growth & Marketing', color: '#B55D46', targetWeeklyHours: 6 },
+    ],
+  },
+  {
+    id: 'sleep_reset',
+    title: 'Sleep Reset',
+    tagline: 'Circadian rhythm alignment and optimal sleep hygiene',
+    icon: '🌙',
+    accentColor: '#6B5F8C',
+    habits: [
+      { name: 'In Bed by 10:30 PM', icon: '🛌', type: 'CHECK', category: 'wellness', color: '#6B5F8C' },
+      { name: 'Caffeine Cutoff at 2 PM', icon: '☕', type: 'CHECK', category: 'wellness', color: '#A67B34' },
+      { name: 'Evening Wind-down Routine', icon: '🕯️', type: 'TIMED', category: 'wellness', targetDurationMinutes: 20, color: '#386B80' },
+      { name: 'Morning Natural Sunlight', icon: '☀️', type: 'CHECK', category: 'wellness', color: '#437A55' },
+    ],
+    subjects: [
+      { name: 'Circadian Science', color: '#6B5F8C', targetWeeklyHours: 3 },
+    ],
+  },
+  {
+    id: 'upsc_prep',
+    title: 'UPSC & Civil Services',
+    tagline: 'Syllabus mastery, editorial analysis, and answer writing',
+    icon: '🏛️',
+    accentColor: '#437A55',
+    habits: [
+      { name: 'The Hindu / Editorial Analysis', icon: '📰', type: 'CHECK', category: 'study', color: '#437A55' },
+      { name: 'Mains Answer Writing', icon: '✍️', type: 'CHECK', category: 'study', color: '#B55D46' },
+      { name: 'Current Affairs Notes', icon: '📌', type: 'TIMED', category: 'study', targetDurationMinutes: 45, color: '#386B80' },
+      { name: 'Static Syllabus Revision', icon: '📚', type: 'CHECK', category: 'study', color: '#A67B34' },
+    ],
+    subjects: [
+      { name: 'Indian Polity & Governance', color: '#437A55', targetWeeklyHours: 8 },
+      { name: 'Modern History & Culture', color: '#A67B34', targetWeeklyHours: 6 },
+      { name: 'Economy & Geography', color: '#386B80', targetWeeklyHours: 6 },
+    ],
+  },
+];
